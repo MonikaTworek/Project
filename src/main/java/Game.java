@@ -7,16 +7,6 @@ class Game implements Serializable {
     private int dim;
 
     /**
-     * Obecna ilość czarnych kamieni
-     */
-    private int currentStonesB;
-
-    /**
-     * Obecna ilość białych kamieni
-     */
-    private int currentStonesW;
-
-    /**
      * Całkowita ilość czarnych kamieni
      */
     private static int totalStonesB;
@@ -42,9 +32,19 @@ class Game implements Serializable {
     private int[][] boardGroups;
 
     /**
+     * Wielowymiarowa tablica przechowująca kopię zapasową planszy (potrzebne do sprawdzania KO)
+     */
+    private int[][][] boardHistory;
+
+    /**
      * Numer poprzedniej grupy
      */
     private int lastGroup;
+
+    /**
+     * Obecny indeks ruchu
+     */
+    private int index;
 
     /**
      * Inicjuje grę.
@@ -52,23 +52,24 @@ class Game implements Serializable {
      * @param dimension wielkość planszy - dopuszczalne 9, 13, 19
      */
     Game(int dimension) {
-        // ustawia rozmiar planszy
         dim = dimension;
 
         // Ustawia ilość kamieni na podstawie wielkości planszy
         setTotalStones(dim);
 
-        // Obecne czarne kamienie
-        currentStonesB = totalStonesB;
-
-        // Obecne białe kamienie
-        currentStonesW = totalStonesW;
-
-        // Dwuwymiarowa tablica kamieni
         board = new Stone[dim][dim];
 
-        // Matryca planszy
+        boardGroups = new int[dim][dim];
+
         boardConsole = new char[dim][dim];
+
+        /*
+		* Przechowuje historię stanu po wprowadzaniu kamieni ([indeks][lokalizacja][lokalizacja],
+		* gdzie -1 czarny, 1 biały, 0 NULL.
+		*/
+        boardHistory = new int[dim * dim][dim][dim];
+
+        index = 0;
 
         // Stwarza początkową czystą planszę konsolową
         consoleMatchPrinter(dim);
@@ -123,29 +124,35 @@ class Game implements Serializable {
      */
     Stone updateBoard(PlayerColor stoneColor, int x, int y) {
         // Sprawdź wprowadzone współrzędne
-        if(!validBoardRange(x, y)) {
+        if(!isInsideBoardRange(x, y)) {
             System.out.println(">> Nieprawidłowy zakres");
             return (null);
         }
         //Sprawdź, czy pozycja jest wolna
-        else if(!isPositionFree(x, y)) {
+        else if(!positionIsFree(x, y)) {
             System.out.println(">> Pozycja zajęta");
             return(null);
         }
         else {
-            // Tworzy nowy kamień i wstawia do gry
             Stone newStone = new Stone(x, y, stoneColor, ++lastGroup);
             int actualGroup = newStone.getGroup();
 
-//            int northNeighbour =
+            //Inicjalizacja sasiadów danego kamienia
+            int northNeighbour = getAdjacentGroup(newStone, true, Direction.NORTH);
+            int southNeighbour = getAdjacentGroup(newStone, true, Direction.SOUTH);
+            int westNeighbour = getAdjacentGroup(newStone, true, Direction.WEST);
+            int eastNeighbour = getAdjacentGroup(newStone, true, Direction.EAST);
+
+            updateGroups(actualGroup, northNeighbour, southNeighbour, westNeighbour, eastNeighbour);
 
             // Wstaw kamień na planszę
             board[x][y] = newStone;
 
-            if (newStone != null) {
-                // Aktualizuje shell (tablicę char)
+            // Dodaj wpis do kopii zapasowej
+            updateBoardHistory();
+
+            if (newStone != null)
                 updateBoardShell(newStone);
-            }
 
             // Zwraca wstawiony kamień lub null, jeżeli kamień nie został wstawiony
             return(newStone);
@@ -158,7 +165,7 @@ class Game implements Serializable {
      * @param y współrzędna Y planszy
      * @return true, jeżli punkt (x,y) mieści się w planszy, w przeciwym wypadku false
      */
-    private boolean validBoardRange(int x, int y) {
+    private boolean isInsideBoardRange(int x, int y) {
         return ((x < dim) && (x > -1) && (y < dim) && (y > -1));
     }
 
@@ -168,7 +175,7 @@ class Game implements Serializable {
      * @param y współrzędna Y planszy
      * @return true, jeżeli pole jest wolne, false - w przeciwynm wypadku
      */
-    private boolean isPositionFree(int x, int y) {
+    private boolean positionIsFree(int x, int y) {
         return (board[x][y] == null);
     }
 
@@ -184,22 +191,115 @@ class Game implements Serializable {
             boardConsole[stone.getX()][stone.getY()] = 'B';
     }
 
-//    private int getAdjacentGroup(Stone stone, boolean sameColor, Direction direction) {
-//        int adjGroup;
-//        PlayerColor stoneColor = stone.getColor();
-//
-//        if(stoneColor == PlayerColor.WHITE) {
-//            if(direction == Direction.NORTH) {
-//            }
-//        }
-//    }
+    /** Metoda zwraca numer grupy, która sąsiaduje z przekazanym kamieniem
+     * @param stone kamień, którego sąsiada poszukujemy
+     * @param hasSameColor oznacza, czy szukamy grupy w kolorze zgodnym z kolorem kamienia
+     * @param direction kierunek
+     * @return poprawny numer grupy (jeżeli istnieje), -100 - jezeli kierunek podano nieprawidłowo,
+     * -1 - jeżeli brak sąsiada ze wskazanej strony.
+     */
+    int getAdjacentGroup(Stone stone, boolean hasSameColor, Direction direction) {
+        int adjGroup = -100;
+        PlayerColor stoneColor = stone.getColor();
 
-    boolean checkIfNotLineRow(int n, Direction direction) {
+        if (hasSameColor) {
+            if (direction == Direction.NORTH) {
+                if (isValidLine(stone.getX(), direction) && !positionIsFree(stone.getX() - 1, stone.getY()) && (stoneColor == board[stone.getX() - 1][stone.getY()].getColor()))
+                    adjGroup = board[stone.getX() - 1][stone.getY()].getGroup();
+                else
+                    adjGroup = -1;
+            } else if (direction == Direction.SOUTH) {
+                if (isValidLine(stone.getX(), direction) && !positionIsFree(stone.getX() + 1, stone.getY()) && (stoneColor == board[stone.getX() + 1][stone.getY()].getColor()))
+                    adjGroup = board[stone.getX() + 1][stone.getY()].getGroup();
+                else
+                    adjGroup = -1;
+            } else if (direction == Direction.EAST) {
+                if (isValidLine(stone.getY(), direction) && !positionIsFree(stone.getX(), stone.getY() + 1) && (stoneColor == board[stone.getX()][stone.getY() + 1].getColor()))
+                    adjGroup = board[stone.getX()][stone.getY() + 1].getGroup();
+                else
+                    adjGroup = -1;
+            } else if (direction == Direction.WEST) {
+                if (isValidLine(stone.getY(), direction) && !positionIsFree(stone.getX(), stone.getY() - 1) && (stoneColor == board[stone.getX()][stone.getY() - 1].getColor()))
+                    adjGroup = board[stone.getX()][stone.getY() - 1].getGroup();
+                else
+                    adjGroup = -1;
+            }
+        }
+        else {
+            if (direction == Direction.NORTH) {
+                if (isValidLine(stone.getX(), direction) && !positionIsFree(stone.getX() - 1, stone.getY()) && (stoneColor != board[stone.getX() - 1][stone.getY()].getColor()))
+                    adjGroup = board[stone.getX() - 1][stone.getY()].getGroup();
+                else
+                    adjGroup = -1;
+            } else if (direction == Direction.SOUTH) {
+                if (isValidLine(stone.getX(), direction) && !positionIsFree(stone.getX() + 1, stone.getY()) && (stoneColor != board[stone.getX() + 1][stone.getY()].getColor()))
+                    adjGroup = board[stone.getX() + 1][stone.getY()].getGroup();
+                else
+                    adjGroup = -1;
+            } else if (direction == Direction.EAST) {
+                if (isValidLine(stone.getY(), direction) && !positionIsFree(stone.getX(), stone.getY() + 1) && (stoneColor != board[stone.getX()][stone.getY() + 1].getColor()))
+                    adjGroup = board[stone.getX()][stone.getY() + 1].getGroup();
+                else
+                    adjGroup = -1;
+            } else if (direction == Direction.WEST) {
+                if (isValidLine(stone.getY(), direction) && !positionIsFree(stone.getX(), stone.getY() - 1) && (stoneColor != board[stone.getX()][stone.getY() - 1].getColor()))
+                    adjGroup = board[stone.getX()][stone.getY() - 1].getGroup();
+                else
+                    adjGroup = -1;
+            }
+        }
+        return(adjGroup);
+    }
+
+    /**
+     * Zmienia grupę wszystkich sąsiednich kamieni tego samego koloru. Nowej grupie przypisywane
+     * są kamienie dawnej grupy.
+     * @param actualGroup grupa wstawianego kamienia
+     * @param n grupa sąsiadująca (góra)
+     * @param s grupa sąsiadująca (dół)
+     * @param w grupa sąsiadująca (lewo)
+     * @param e grupa sąsiadująca (prawo)
+     */
+    private void updateGroups(int actualGroup, int n, int s, int w, int e) {
+        for(int i = 0; i < dim; i++)
+            for(int j = 0; j < dim; j++)
+                if(board[i][j] != null) {
+                    if(board[i][j].getGroup() == n || board[i][j].getGroup() == s || board[i][j].getGroup() == w ||
+                            board[i][j].getGroup() == e) {
+                        boardGroups[i][j] = actualGroup;
+                        board[i][j].setGroup(actualGroup);
+                    }
+                }
+    }
+
+    /**
+     * Metoda sprawdzająca, czy z podanej strony(kierunku) może istnieć
+     * @param n współrzędna kamienia
+     * @param direction kierunek,
+     * @return <code>false</code> w przypadku, gdy podana współrzędna kamienia znajduje sie
+     * na brzegu planszy, <code>true</code> - w przeciwnym wypadku
+     */
+    boolean isValidLine(int n, Direction direction) {
         if(direction.equals(Direction.NORTH) || direction.equals(Direction.WEST))
             return (n > 0);
         //przypadek dla "South" i "East"
         else
-            return (n < dim - 1);
+            return (n < dim-1);
+    }
+
+    /**
+     * Aktualizacja tablicy z kopię zapasową
+     */
+    private void updateBoardHistory() {
+        for(int i = 0; i < dim; i++)
+            for(int j = 0; j < dim; j++) {
+                if(board[i][j] == null)
+                    boardHistory[index][i][j] = 0;
+                else if(board[i][j].getColor() == PlayerColor.BLACK)
+                    boardHistory[index][i][j] = -1;
+                else if(board[i][j].getColor() == PlayerColor.WHITE)
+                    boardHistory[index][i][j] = 1;
+            }
     }
 
     /**
@@ -210,18 +310,15 @@ class Game implements Serializable {
         char[][] matrix = boardConsole;
 
         String string19 = "     A B C D E F G H I J K L M N O P Q R S\n";
-        String string13 = "     A B C D E F G H I J K L M\n";
-        String string9 = "     A B C D E F G H I\n";
-        String letters = "";
+        String letters;
         if(dim == 19)
             letters = string19;
-        else if (dim == 9)
-            letters = string9;
+        else if (dim == 13)
+            letters = string19.substring(0, 31) + '\n';
         else
-            letters = string13;
+            letters = string19.substring(0, 23) + "\n";
 
         System.out.print("\n" + letters);
-
         for (char[] m : matrix)
             for (int j = 0; j < matrix.length; j++) {
                 if (j == 0) {
