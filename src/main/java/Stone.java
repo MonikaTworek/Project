@@ -47,6 +47,14 @@ class Stone implements Serializable {
         return(color);
     }
 
+
+    /**
+     * Setuje numer grupy
+     */
+    void setGroup(int g) {
+        group = g;
+    }
+
     /**
      * Zwraca grupę, do której należy kamień
      * @return oznacza grupę
