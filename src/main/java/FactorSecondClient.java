@@ -42,15 +42,15 @@ public class FactorSecondClient extends Factor {
      */
     public void start(int x, int y) throws Exception {
         if (stone) {
-            if (game_graph != null) {
+            if (game != null) {
                 if (/*jeżeli gra trwa*/) {
                     String coord = x + "-" + y;
-                    PlayerColor stone = game_graph.getMove();
+                    PlayerColor stone = game.getCurrentPlayer();
 
                     if ((x == 100) && (y == 100)) {
                         PrintWriter out_txt =  new PrintWriter(socket.getOutputStream(), true);
                         out_txt.println(coord);
-                        //TODO: zmienia czyj ruch i inne rzeczy związane z położeniem kamienia. coś w rodzaju skip
+                        game.skipMove();
                         this.stone = !(this.stone);
                         painLastMove(x, y);
                         new WaitMoveFromServer();
@@ -58,7 +58,7 @@ public class FactorSecondClient extends Factor {
                         return;
                     }
 
-                    Stone p = game_graph.updateBoard(stone, x, y, "");
+                    Stone p = game.updateBoard(stone, x, y);
 
                     if (p != null) {
                         PrintWriter out_txt =  new PrintWriter(socket.getOutputStream(), true);
@@ -102,20 +102,20 @@ public class FactorSecondClient extends Factor {
                 int x = Integer.parseInt(t.nextToken());
                 int y = Integer.parseInt(t.nextToken());
 
-                if (game_graph != null) {
+                if (game != null) {
                     if (/*jeżeli gra trwa*/) {
-                        PlayerColor stone = game_graph.getMove();
+                        PlayerColor stone = game.getCurrentPlayer();
 
                         if ((x == 100) && (y == 100)) {
-                            //TODO:zmienia czyj ruch i inne rzeczy związane z położeniem kamienia. coś w rodzaju skip
+                            game.skipMove();
                             painLastMove(x, y);
                             //TODO:narysuj okno jeszcze raz
                         }
                         else {
-                            Stone p = game_graph.updateBoard(stone, x, y, "");
+                            Stone p = game.updateBoard(stone, x, y);
 
                             if (p != null) {
-                                stone = game_graph.getMove();
+                                stone = game.getCurrentPlayer();
                                 painLastMove(x, y);
                             }
                             //TODO: narysuj okno jeszcze raz

@@ -13,7 +13,7 @@ class Factor {
     /**
      * Tworzy grę
      */
-    Game game_graph;
+    Game game;
 
     /**
      * Nasłuchuje drugiego gracza.
@@ -33,19 +33,19 @@ class Factor {
      * @throws Exception gdy wystąpi błąd.
      */
     public void start(int x, int y) throws Exception {
-        if (game_graph != null) {
+        if (game != null) {
             if (/*gd gra trwa*/) {
-                PlayerColor stone = game_graph.getMove();
+                PlayerColor stone = game.getCurrentPlayer();
 
                 if ((x == 100) && (y == 100)) {
-                    //TODO: zmienia czyj ruch i inne rzeczy związane z położeniem kamienia. coś w rodzaju skip
+                    game.skipMove();
                     painLastMove(x, y);
                 }
                 else {
-                    Stone p = game_graph.updateBoard(stone, x, y, "");
+                    Stone p = game.updateBoard(stone, x, y);
 
                     if (p != null) {
-                        stone = game_graph.getMove();
+                        stone = game.getCurrentPlayer();
                         painLastMove(x, y);
                     }
                 }
@@ -77,7 +77,7 @@ class Factor {
      */
     void destroyGoban()
     {
-        game_graph = null;
+        game = null;
     }
 
     /**
@@ -85,7 +85,7 @@ class Factor {
      */
     private void makeGoban()
     {
-        game_graph = new Game(19);
+        game = new Game(19);
     }
 
     /**
@@ -93,7 +93,7 @@ class Factor {
      *
      * @return plansza
      */
-    Game getGoban() { return(game_graph); }
+    Game getGoban() { return(game); }
 
     /**
      * Zwraca socket
