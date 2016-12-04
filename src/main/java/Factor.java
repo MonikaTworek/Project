@@ -1,34 +1,107 @@
 import java.net.*;
+import javax.swing.*;
 
 /**
- * Created by Mona on 30.11.2016.
+ * Klasa pozwala na sprawne przeprowadzanie meczu. Posiada podklasy dla pierwszego i drugiego klienta.  Pośrednik.
+ *
  */
-public class Factor {
-    //TODO: grafika
+class Factor {
+    Factor() {
+        makeGoban();
+    }
 
     /**
-     * Nasłuchuje klienta.
+     * Tworzy grę
+     */
+    Game game_graph;
+
+    /**
+     * Nasłuchuje drugiego gracza.
      */
     ServerSocket s;
 
     /**
-     * Umożliwia komunikację między klientem, a serwerem.
+     * Umożliwia komunikację między klientami.
      */
     Socket socket;
 
     /**
-     * Metoda która rozpocznie się po spasowaniu lub położeniu kamienia
+     * Metoda, która rozpoczyna się, gdy użytkownik wybierze miejsce gdzie położy kamień lub spasuje. Koordynuje kamień.
+     *
+     * @param x współrzędna x
+     * @param y współrzędna y
+     * @throws Exception gdy wystąpi błąd.
      */
-    void start(){
+    public void start(int x, int y) throws Exception {
+        if (game_graph != null) {
+            if (/*gd gra trwa*/) {
+                PlayerColor stone = game_graph.getMove();
 
+                if ((x == 100) && (y == 100)) {
+                    //TODO: zmienia czyj ruch i inne rzeczy związane z położeniem kamienia. coś w rodzaju skip
+                    painLastMove(x, y);
+                }
+                else {
+                    Stone p = game_graph.updateBoard(stone, x, y, "");
+
+                    if (p != null) {
+                        stone = game_graph.getMove();
+                        painLastMove(x, y);
+                    }
+                }
+            }
+        }
+        else
+            System.out.println("Game not exist.");
     }
 
     /**
-     * Metoda zwracająca ostatni ruch
+     * Metoda zwraca ostatni ruch.
+     *
+     * @param x współrzędna x
+     * @param y coordinata y
      */
-    void painLastMove(){
-
+    void painLastMove(int x, int y) {
+        if ((x == 100) && (y == 100)) {
+            String a = "Player passed";
+            String b = "Game info";
+            JOptionPane.showMessageDialog(null, a, b, JOptionPane.INFORMATION_MESSAGE);
+        }
+        else {
+            //TODO: co się zmieni w oknie
+        }
     }
 
-    //TODO: metody związane z planszą
+    /**
+     * Usuwa planszę
+     */
+    void destroyGoban()
+    {
+        game_graph = null;
+    }
+
+    /**
+     * Tworzy nową planszę
+     */
+    private void makeGoban()
+    {
+        game_graph = new Game(19);
+    }
+
+    /**
+     * Zwraca planszę
+     *
+     * @return plansza
+     */
+    Game getGoban() { return(game_graph); }
+
+    /**
+     * Zwraca socket
+     *
+     * @return socket socket
+     */
+    public Socket getSocket()
+    {
+        return(socket);
+    }
 }
