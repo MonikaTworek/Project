@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+//import javafx.scene.input.MouseButton;
+=======
 import javafx.scene.input.MouseButton;
+>>>>>>> master
 import org.imgscalr.Scalr;
 
 import javax.swing.*;
@@ -8,7 +12,10 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 import java.io.*;
+<<<<<<< HEAD
+=======
 import java.util.Vector;
+>>>>>>> master
 import javax.imageio.*;
 
 class GameWindow extends JFrame {
@@ -31,6 +38,17 @@ class GameWindow extends JFrame {
     private JTextField jTextField15;
 
     static GameWindow window;
+<<<<<<< HEAD
+    ClientManager manager;
+    boolean ok;
+    boolean gameStopped = false;
+    private int dimension;
+
+    GameWindow(int dim) {
+        window = this;
+        dimension = dim;
+        buildWindow();
+=======
     GameMoveManager manager;
     boolean ok;
     private int dimension;
@@ -40,14 +58,21 @@ class GameWindow extends JFrame {
         window = this;
         dimension = dim;
         initComponents();
+>>>>>>> master
     }
 
     class MainPanel extends JPanel {
         private Image boardIMG;
         private Image blackIMG;
         private Image whiteIMG;
+<<<<<<< HEAD
+        private Image blackTerritoryIMG;
+        private Image whiteTerritoryIMG;
+        private Image markup;
+=======
         private Image blackEndIMG;
         private Image whiteEndIMG;
+>>>>>>> master
 
         private int height;
         private int base;
@@ -56,6 +81,22 @@ class GameWindow extends JFrame {
         int lastX;
         int lastY;
 
+<<<<<<< HEAD
+        int sizeOfField;
+        int stoneSize;
+        int xAdd;
+        int yAdd;
+        int xTer;
+        int yTer;
+        int xViewfinder;
+        int yViewfinder;
+
+        MainPanel() {
+            setGraphicVariables();
+            loadGraphics();
+            addMouseListener(new MouseListener() {
+                public void mousePressed (MouseEvent e){
+=======
 
         MainPanel() {
             try {
@@ -73,11 +114,53 @@ class GameWindow extends JFrame {
 
             addMouseListener(new MouseListener() {
                 public void mousePressed(MouseEvent e) {
+>>>>>>> master
                     int coordX = e.getY();
                     int coordY = e.getX();
                     int click = e.getButton();
                     int line = 0;
                     int column = 0;
+<<<<<<< HEAD
+                    boolean sendClicked = false;
+
+                    for (int i = 18; i < 533; i += sizeOfField, line++) {
+                        for (int j = 18; j < 483; j += sizeOfField, column++) {
+                            if ((coordX >= i) && (coordX < (i + sizeOfField)) && (coordY >= j) && (coordY < (j + sizeOfField))) {
+                                try {
+                                    if (manager == null)
+                                        return;
+
+                                    //rozgrywka klient-serwer
+                                    if ((manager instanceof FirstClientManager) || (manager instanceof SecondClientManager)) {
+                                        if (gameStopped) {
+                                            manager.getBoard().deadStones[line][column] = true;
+                                        }
+//                                        //dopóki nie kliknie send: zaznacza pola + repaint (wraz z zaznaczeniem)
+//                                        //gdy kliknie ok: wysyła na serwer w pętli te dane.
+//                                        //Serwer wysyła do drugiego klienta itd
+//                                        else if(click == 1)
+                                        else
+                                            manager.start(line, column);
+                                    }
+                                    //jednookienkowe (lewy i prawy klawisz)
+                                    else {
+                                        if (gameStopped && click == 3 && manager.getBoard().getBoard()[line][column] != null) {
+                                            manager.getBoard().deadStones[line][column] = !manager.getBoard().deadStones[line][column];
+                                        }
+                                        else {
+                                            if ((click == 1) && (manager.getBoard().getCurrentPlayer() == PlayerColor.WHITE))
+                                                manager.getBoard().changeTurn();
+                                            else if ((click == 3) && (manager.getBoard().getCurrentPlayer() == PlayerColor.BLACK))
+                                                manager.getBoard().changeTurn();
+                                            System.out.println("Przed wstawieniem kamienia");
+                                            manager.start(line, column);
+                                        }
+                                    }
+                                    reloadInfo();
+                                    repaint();
+                                }
+                                catch (Exception ec) {
+=======
 
                     for (int i = 18; i < 533; i += 25, line++) {
                         for (int j = 18; j < 483; j += 25, column++) {
@@ -89,6 +172,7 @@ class GameWindow extends JFrame {
                                     reload();
                                     repaint();
                                 } catch (Exception ec) {
+>>>>>>> master
                                     System.err.println("Error");
                                     ec.printStackTrace();
                                 }
@@ -99,6 +183,17 @@ class GameWindow extends JFrame {
                 }
 
                 public void mouseClicked(MouseEvent e) {}
+<<<<<<< HEAD
+
+                public void mouseReleased(MouseEvent e) {}
+
+                public void mouseEntered(MouseEvent e) {}
+
+                public void mouseExited(MouseEvent e) {}
+            });
+            addMouseMotionListener(new MouseMotionListener() {
+                public void mouseMoved (MouseEvent e){
+=======
                 public void mouseReleased(MouseEvent e) {}
                 public void mouseEntered(MouseEvent e) {}
                 public void mouseExited(MouseEvent e) {}
@@ -106,6 +201,7 @@ class GameWindow extends JFrame {
 
             addMouseMotionListener(new MouseMotionListener() {
                 public void mouseMoved(MouseEvent e) {
+>>>>>>> master
                     if (!jCheckBoxMenuItem1.isSelected()) {
                         height = 0;
                         base = 0;
@@ -118,11 +214,19 @@ class GameWindow extends JFrame {
                     int coord_x = e.getY();
                     int coord_y = e.getX();
 
+<<<<<<< HEAD
+                    for (int i = 18; i < 533; i += sizeOfField)
+                        for (int j = 18; j < 483; j += sizeOfField) {
+                            if ((coord_x >= i) && (coord_x < (i + sizeOfField)) && (coord_y >= j) && (coord_y < (j + sizeOfField))) {
+                                leftX = j + xViewfinder;
+                                topY = i + yViewfinder;
+=======
                     for (int i = 18; i < 533; i += 25)
                         for (int j = 18; j < 483; j += 25) {
                             if ((coord_x >= i) && (coord_x < (i+25)) && (coord_y >= j) && (coord_y < (j+25))) {
                                 leftX = j+2;
                                 topY = i+7;
+>>>>>>> master
                                 repaint();
                             }
                         }
@@ -132,6 +236,64 @@ class GameWindow extends JFrame {
             });
         }
 
+<<<<<<< HEAD
+        private void setGraphicVariables() {
+            if(dimension == 19) {
+                sizeOfField = 25;
+                xAdd = 15;
+                yAdd = 20;
+                xTer = 21;
+                yTer = 25;
+                stoneSize = 20;
+                xViewfinder = 2;
+                yViewfinder = 7;
+            }
+
+            else if(dimension == 9) {
+                sizeOfField = 52;
+                xAdd = 22;
+                yAdd = 27;
+                xTer = 32;
+                yTer = 35;
+                stoneSize = 40;
+                xViewfinder = 17;
+                yViewfinder = 20;
+            }
+        }
+
+        private void loadGraphics() {
+            try {
+                boardIMG = ImageIO.read(new File(dimension + "x" + dimension + ".png"));
+                blackIMG = Scalr.resize(ImageIO.read(new File("stoneBlack.png")), stoneSize);
+                whiteIMG = Scalr.resize(ImageIO.read(new File("stoneWhite.png")), stoneSize);
+                blackTerritoryIMG = Scalr.resize(ImageIO.read(new File("stoneBlack.png")), stoneSize/2);
+                whiteTerritoryIMG = Scalr.resize(ImageIO.read(new File("stoneWhite.png")), stoneSize/2);
+                markup = Scalr.resize(ImageIO.read(new File("markup.png")), stoneSize/2);
+            }
+            catch(Exception exception){
+                exception.printStackTrace();
+            }
+        }
+
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g;
+            g.drawImage(boardIMG, 10, 15, null);
+
+            if(manager != null) {
+//                if (manager.getBoard().currentGame() == GamePhase.CHOOSING) {
+//                    char[][] tmp2 = manager.getBoard().getTerritoryPointsBoard();
+//                    insertTerritoryStones(tmp2, g);
+//                }
+                insertStoneGraphics(manager.getBoard().getBoard(), g);
+
+                if (gameStopped) {
+                    for (int i = 0; i < dimension; i++)
+                        for (int j = 0; j < dimension; j++) {
+                            if (manager.getBoard().deadStones[i][j])
+                                g.drawImage(markup, (j * sizeOfField) + xTer, (i * sizeOfField) + yTer, null);
+                        }
+=======
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
@@ -147,6 +309,7 @@ class GameWindow extends JFrame {
             }
             if(manager != null && gameStopped) {
                 for(Point p: deadStones) {
+>>>>>>> master
                 }
             }
 
@@ -159,33 +322,59 @@ class GameWindow extends JFrame {
             g2.fill(circle);
 
             try {
+<<<<<<< HEAD
+                reloadInfo();
+=======
                 reload();
+>>>>>>> master
             }
             catch (Exception ignored) {}
         }
 
         void insertStoneGraphics(Stone[][] temp, Graphics g) {
+<<<<<<< HEAD
+            for (int i = 0; i < dimension; i++)
+                for (int j = 0; j < dimension; j++) {
+                    if ((temp[i][j] != null) && temp[i][j].getColor() == PlayerColor.WHITE)
+                        g.drawImage(whiteIMG, (j * sizeOfField) + xAdd, (i * sizeOfField) + yAdd, null);
+                    else if ((temp[i][j] != null) && temp[i][j].getColor() == PlayerColor.BLACK)
+                        g.drawImage(blackIMG, (j * sizeOfField) + xAdd, (i * sizeOfField) + yAdd, null);
+=======
             for (int i = 0; i < 19; i++)
                 for (int j = 0; j < 19; j++) {
                     if ((temp[i][j] != null) && temp[i][j].getColor() == PlayerColor.WHITE)
                         g.drawImage(whiteIMG, (j * 25) + 15, (i * 25) + 20, null);
                     else if ((temp[i][j] != null) && temp[i][j].getColor() == PlayerColor.BLACK)
                         g.drawImage(blackIMG, (j * 25) + 15, (i * 25) + 20, null);
+>>>>>>> master
                 }
         }
 
         void insertTerritoryStones(char[][] temp, Graphics g) {
+<<<<<<< HEAD
+            for (int i = 0; i < dimension; i++)
+                for (int j = 0; j < dimension; j++) {
+                    if (temp[i][j] == 'W')
+                        g.drawImage(whiteTerritoryIMG, (j * sizeOfField) + xTer, (i * sizeOfField) + yTer, null);
+                    else if (temp[i][j] == 'B')
+                        g.drawImage(blackTerritoryIMG, (j * sizeOfField) + xTer, (i * sizeOfField) + yTer, null);
+=======
             for (int i = 0; i < 19; i++)
                 for (int j = 0; j < 19; j++) {
                     if (temp[i][j] == 'W')
                         g.drawImage(whiteEndIMG, (j * 25) + 21, (i * 25) + 25, null);
                     else if (temp[i][j] == 'B')
                         g.drawImage(blackEndIMG, (j * 25) + 21, (i * 25) + 25, null);
+>>>>>>> master
                 }
         }
     }
 
+<<<<<<< HEAD
+    private void buildWindow() {
+=======
     private void initComponents() {
+>>>>>>> master
         JPanel jPanel1 = new JPanel();
         jPanel2 = new MainPanel();
         JPanel jPanel3 = new JPanel();
@@ -256,7 +445,10 @@ class GameWindow extends JFrame {
             public void windowClosing(WindowEvent e) {
                 String p = "Do you want to exit the program";
                 int c = JOptionPane.showConfirmDialog(null, p, "Information", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
                 if (c == JOptionPane.OK_OPTION)
                     System.exit(1);
             }
@@ -331,7 +523,11 @@ class GameWindow extends JFrame {
         setTextFields(jTextField14, 130, jLayeredPane1);
         setTextFields(jTextField15, 150, jLayeredPane1);
 
+<<<<<<< HEAD
+        jTextField8.setText("" + dimension);
+=======
         jTextField8.setText("19");
+>>>>>>> master
 
         buttonPass.setFont(new Font("Dialog", 0, 12));
         buttonPass.setText("Pass");
@@ -342,6 +538,10 @@ class GameWindow extends JFrame {
                 //jeżeli gra zatrzymana
                 if(manager != null && manager.getBoard().currentGame() == GamePhase.CHOOSING) {
                     gameStopped = true;
+<<<<<<< HEAD
+                    System.out.println("GameStopped");
+=======
+>>>>>>> master
                     jTabbedPane1.setEnabledAt(2, true);
                     jTabbedPane1.setSelectedIndex(2);
                 }
@@ -382,6 +582,37 @@ class GameWindow extends JFrame {
         buttonSend.addActionListener(e -> {
             try {
                 System.out.println("SEND");
+<<<<<<< HEAD
+                //TODO Wyślij do przeciwnika
+                manager.getBoard().updateDeadStoneDecision(1);
+                manager.getBoard().changeTurn();
+                repaint();
+            }
+            catch (Exception ignored) {}
+        });
+
+        buttonAgree.addActionListener(e -> {
+            try {
+                System.out.println("AGREE");
+                manager.getBoard().updateDeadStoneDecision(-1);
+                System.out.println("STATE: " + manager.getBoard().currentGame());
+                manager.getBoard().changeTurn();
+                repaint();
+            }
+            catch (Exception ignored) {}
+        });
+
+        buttonResume.addActionListener(e -> {
+            try {
+                System.out.println("RESUME");
+                gameStopped = false;
+                System.out.println("Game Stopped = " + gameStopped);
+                manager.getBoard().returnToMainPhase();
+                manager.getBoard().changeTurn();
+                jTabbedPane1.setEnabledAt(2, false);
+                jTabbedPane1.setSelectedIndex(0);
+=======
+>>>>>>> master
                 repaint();
             }
             catch (Exception ignored) {}
@@ -414,16 +645,30 @@ class GameWindow extends JFrame {
 
         setMenuItems(jMenuItem1, jMenu1, "New game", e -> {
             check();
+<<<<<<< HEAD
+            manager = new ClientManager();
+=======
             manager = new GameMoveManager();
+>>>>>>> master
             repaint();
             ok = true;
         });
         setMenuItems(jMenuItem2, jMenu1, "Clear board", e -> {
+<<<<<<< HEAD
+            if(manager != null) {
+                manager.destroyBoard();
+                manager = null;
+                repaint();
+                zeroInfo();
+                ok = true;
+            }
+=======
             manager.destroyBoard();
             manager = null;
             repaint();
             zeroInfo();
             ok = true;
+>>>>>>> master
         });
         jMenu1.add(jSeparator1);
         setMenuItems(jMenuItem3, jMenu1, "New client/server", e -> new OpenSocketSession());
@@ -496,8 +741,13 @@ class GameWindow extends JFrame {
         item.addActionListener(listener);
     }
 
+<<<<<<< HEAD
+    private void reloadInfo() {
+        if(manager.getBoard().getCurrentPlayer() == PlayerColor.BLACK)
+=======
     private void reload() {
         if(manager.boardGraphic.getCurrentPlayer() == PlayerColor.BLACK)
+>>>>>>> master
             jLabel17.setText("BLACK");
         if(manager.getBoard().getCurrentPlayer() == PlayerColor.WHITE)
             jLabel17.setText("WHITE");
@@ -513,6 +763,29 @@ class GameWindow extends JFrame {
         jTextField4.setText(manager.getBoard().getWhiteTerritoryPoints() + "");
         jTextField5.setText(manager.getBoard().getBlackScore() + "");
         jTextField6.setText(manager.getBoard().getWhiteScore() + "");
+<<<<<<< HEAD
+
+
+        //TODO wyświetlanie zwycięzcy
+//        if (!manager.getBoard().currentGame() && ok) {
+//            gameStopped = true;
+//            jTabbedPane1.setEnabledAt(2, true);
+//            double b = manager.getBoard().getBlackScore();
+//            double w = manager.getBoard().getWhiteScore();
+//
+//            if (b > w) {
+//                ok = false;
+//                jTextField7.setText("Black");
+////                new ThreadForJOptionPane("Black");
+//            }
+//            else {
+//                ok = false;
+//                jTextField7.setText("White");
+////                new ThreadForJOptionPane("White");
+//            }
+//        }
+=======
+>>>>>>> master
     }
 
     private void zeroInfo() {
@@ -559,6 +832,18 @@ class GameWindow extends JFrame {
                 window.manager = null;
             }
 
+<<<<<<< HEAD
+//            if (window.chat != null) {
+//                if (window.chat.s != null)
+//                    window.chat.s.close();
+//
+//                if (window.chat.socket != null)
+//                    window.chat.socket.close();
+//
+//                window.chat = null;
+//            }
+=======
+>>>>>>> master
         }
         catch (Exception ec) {
             ec.printStackTrace();
