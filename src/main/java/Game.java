@@ -1,5 +1,8 @@
 import java.io.Serializable;
 
+/**
+ * Klasa czuwająca nad przebiegiem rozgrywki, posiadająca zaimplementowane reguły gry GO.
+ */
 class Game implements Serializable {
     /**
      * Wymiar planszy
@@ -57,7 +60,7 @@ class Game implements Serializable {
     private int[][][] historyBoard;
 
     /**
-     * Tablica pukntów terytorium
+     * Tablica punktów terytorium
      */
     private char[][] territoryPointsBoard;
 
@@ -65,6 +68,17 @@ class Game implements Serializable {
      * Stos wykonanych ruchów
      */
     private int[] movesStack;
+
+    /**
+     * Tablica ze stanem kamieni (żywy, martwy)
+     */
+    boolean[][] deadStones;
+
+    /**
+     * Ostatnie dwie decyzje podjęte przez graczy w fazie 'Choosing'
+     */
+    int[] deadStoneDecision;
+
     /**
      * Numer poprzedniej grupy
      */
@@ -88,17 +102,35 @@ class Game implements Serializable {
     /**
      * Obecny ruch
      */
-    private PlayerColor currentMove;
+    private PlayerColor currentPlayer;
 
     /**
-     * Obecny stan gry
+     * Obecna faza gry
      */
-    private boolean activePlay;
-
-    private String lastMove;
+    GamePhase gameState;
 
     /**
-     * Inicjuje grę.
+     * Wynik gracza czarnego
+     */
+    private double blackScore;
+
+    /**
+     * Wynik gracza białego
+     */
+    private double whiteScore;
+
+    /**
+     * Punkty terytorium gracza czarnego
+     */
+    private int blackTerritoryPoints;
+
+    /**
+     * Punkty terytorium gracza białego
+     */
+    private int whiteTerritoryPoints;
+
+    /**
+     * Inicjuje grę oraz składowe gry
      *
      * @param dimension wielkość planszy - dopuszczalne 9, 13, 19
      */
@@ -111,12 +143,19 @@ class Game implements Serializable {
         currentStonesW = totalStonesW;
         capturedByB = 0;
         capturedByW = 0;
+        whiteScore = 0;
+        blackScore = 0;
 
         board = new Stone[dim][dim];
         groupsBoard = new int[dim][dim];
         consoleBoard = new char[dim][dim];
         territoryPointsBoard = new char[dim][dim];
-        currentMove = PlayerColor.BLACK;
+        deadStones = new boolean[dim][dim];
+        for(int i = 0; i < dim; i++)
+            for(int j = 0; j < dim; j++)
+                deadStones[i][j] = false;
+        deadStoneDecision = new int[3];
+        currentPlayer = PlayerColor.BLACK;
 
         /*
 		* Przechowuje historię stanu po wprowadzaniu kamieni ([indeks][lokalizacja][lokalizacja],
@@ -130,7 +169,7 @@ class Game implements Serializable {
         // Stwarza początkową czystą planszę konsolową
         consoleMatchPrinter(dim);
 
-        activePlay = true;
+        gameState = GamePhase.MAIN;
     }
 
     /**
@@ -138,8 +177,8 @@ class Game implements Serializable {
      * @param dimension oznacza wymiar planszy
      */
     private void setTotalStones(int dimension) {
-        totalStonesW = dimension*dimension - 1;
-        totalStonesB = dimension* dimension - 1;
+        totalStonesW = dimension * dimension / 2 - 1;
+        totalStonesB = dimension * dimension / 2 ;
     }
 
     /**
@@ -173,14 +212,14 @@ class Game implements Serializable {
 
     /**
      * Metoda wywołująca różne metody kontroli wstawiania kamienia. Po sprawdzeniu, że punkt (x,y) jest poprawny,
-     * tworzy obiekt main.java.Stone i umieszcza go w (X,Y) planszy. Zwraca obiekt kamienia wpisanego lub NULL
+     * tworzy obiekt typu Stone i umieszcza go w (X,Y) planszy. Zwraca obiekt kamienia wpisanego lub NULL
      *
      * @param stoneColor oznacza kolor gracza, który położył kamień
      * @param x oznacza współrzędną X na planszy
      * @param y oznacza współrzędną Y na planszy
      * @return oznacza obiekt wstawionego kamienia, jeżeli pomyślnie lub NULL w przypadku niepowodzenia
      */
-    Stone updateBoard(PlayerColor stoneColor, int x, int y, String insert) {
+    Stone updateBoard(PlayerColor stoneColor, int x, int y) {
         // Sprawdź wprowadzone współrzędne
         if(!isInsideBoardRange(x, y)) {
             System.out.println(">> Nieprawidłowy zakres");
@@ -219,7 +258,7 @@ class Game implements Serializable {
 
                 //próba samobójcza
                 if(libertiesOfGroup(actualGroup) == 0) {
-                    int[] groupsWithoutLiberties = groupsToKill(actualGroup, newStone.getColor());
+                    int[] groupsWithoutLiberties = getGroupsToKill(actualGroup, newStone.getColor());
                     if(groupsWithoutLiberties[0] == 0) {
                         System.out.println(">> Ruch niedozwolony: próba samobójcza");
                         board[x][y] = null;
@@ -245,7 +284,7 @@ class Game implements Serializable {
                     // Zmienne pomocnicze
                     int tmpW = capturedByW, tmpB = capturedByB;
                     captureChecker(actualGroup, newStone);
-                    if(tmpW != capturedByB || tmpB != capturedByW)
+                    if(tmpW != capturedByW || tmpB != capturedByB)
                         System.out.println(">> Wzięto do niewoli");
                     if(newStone.getColor() == PlayerColor.WHITE)
                         currentStonesW--;
@@ -258,9 +297,8 @@ class Game implements Serializable {
             if (newStone != null) {
                 updateConsoleBoard(newStone);
                 updateGroupBoard(newStone);
-                updateCurrentIndex(true);
+                updateCurrentIndex();
                 updateMovesStack(1);
-                lastMove = insert;
             }
 
             return(newStone);
@@ -307,6 +345,7 @@ class Game implements Serializable {
      * @return poprawny numer grupy (jeżeli istnieje), -100 - jezeli kierunek podano nieprawidłowo,
      * -1 - jeżeli brak sąsiada ze wskazanej strony.
      */
+    //TODO skrócić to
     int getAdjacentGroup(Stone stone, boolean hasSameColor, Direction direction) {
         int adjGroup = -100;
         PlayerColor stoneColor = stone.getColor();
@@ -457,7 +496,7 @@ class Game implements Serializable {
     private int stoneLibertiesInGroup(int x, int y, boolean[][] libMatrix) {
         int counter = 0;
 
-        // Warunki z każdym z czterech kierunków zapobiegają wyjściu poza planszę
+        // Warunki dla czterech kierunków zapobiegają wyjściu poza planszę
         if(isValidLine(x, Direction.NORTH) && positionIsFree(x-1, y) && !libMatrix[x-1][y]) {
             counter++;
             libMatrix[x-1][y] = true;
@@ -477,7 +516,14 @@ class Game implements Serializable {
         return counter;
     }
 
-    private int[] groupsToKill(int group, PlayerColor color) {
+    /**
+     * Metoda tworząca tablicę grup, które należy usunąć z planszy
+     * @param group aktualna grupa wstawionego kamienia
+     * @param color kolor gracza
+     * @return tablica o indeksach odpowiadających kolejnym grupom na planszy; wartość true oznacza grupę,
+     * którą należy usunąć
+     */
+    private int[] getGroupsToKill(int group, PlayerColor color) {
         int counter[] = new int[dim*dim];
         counter[0] = 0;
         int c = 0, liberties;
@@ -495,29 +541,11 @@ class Game implements Serializable {
                         }
                     }
                 }
-                return counter;
+        return counter;
     }
 
     /**
-     * Metoda negująca obecną wartość zmiennej - zmiana tury
-     */
-    void changeTurn() {
-        if(currentMove == PlayerColor.BLACK)
-            currentMove = PlayerColor.WHITE;
-        else
-            currentMove = PlayerColor.BLACK;
-    }
-
-    PlayerColor skipMove() {
-        changeTurn();
-        updateCurrentIndex(true);
-        updateMovesStack(-1);
-        lastMove = "skip";
-        return getMove();
-    }
-
-    /**
-     * Metoda usuwająca z planszy kamienie zbitej grupy, aktualizuje plansze
+     * Metoda usuwająca z planszy kamienie zbitej grupy, aktualizuje planszę
      * @param group usuwana grupa
      * @param color kolor kamieni
      */
@@ -536,6 +564,33 @@ class Game implements Serializable {
                 }
     }
 
+    /**
+     * Metoda zmieniająca obecną turę.
+     */
+    void changeTurn() {
+        if(currentPlayer == PlayerColor.BLACK)
+            currentPlayer = PlayerColor.WHITE;
+        else
+            currentPlayer = PlayerColor.BLACK;
+    }
+
+    /**
+     * Metoda kończąca trwającą turę jako spasowaną - zmiana aktywnego gracza, obecnego indeksu
+     * @return kolor aktywnego obecnie gracza
+     */
+    PlayerColor skipMove() {
+        changeTurn();
+        updateCurrentIndex();
+        updateMovesStack(-1);
+        return getCurrentPlayer();
+    }
+
+    /**
+     * Metoda sprawdza, czy w wyniku dostawienia nowego kamienia na planszę konieczne jest usunięcie
+     * jakiejś grupy.
+     * @param actualGroup aktualna grupa kamienia
+     * @param stone dostawiony na plansze kamień
+     */
     private void captureChecker(int actualGroup, Stone stone) {
         int north = getAdjacentGroup(stone, false, Direction.NORTH);
         int south = getAdjacentGroup(stone, false, Direction.SOUTH);
@@ -561,84 +616,333 @@ class Game implements Serializable {
     }
 
     /**
-     * Zwiększa obecny numer indeksu jeżeli przekazano true. W przeciwnym razie - zmniejsza
-     * @param isOkey zmienna decydująca o zwiększeniu/zmniejszeniu indeksu
+     * Zwiększa obecny numer indeksu.
      */
-    private void updateCurrentIndex(boolean isOkey) {
-        if(isOkey)
-            index++;
-        else
-            index--;
+    private void updateCurrentIndex() {
+        index++;
     }
 
-    private boolean updateMovesStack(int value) {
-        if(value == 1 || value == -1) {
-            if(movesStack[0] == 1) {
-                movesStack[2] = value;
-                movesStack[0] = 2;
+    /**
+     * Metoda zapamiętująca w tablicy typ ostatnio wykonanego ruchu - 1: wstawiono kamień, -1: spasowano
+     * @param value wartość do wstawienia
+     */
+    private void updateMovesStack(int value) {
+        if (movesStack[0] == 1) {
+            movesStack[2] = value;
+            movesStack[0] = 2;
+        }
+        else {
+            movesStack[1] = value;
+            movesStack[0] = 1;
+        }
+    }
+
+    /**
+     * Metoda zwracająca aktualny stan gry.
+     * @return <code>true</code>, jeżeli gra nadal trwa, <code>false</code>, gdy gra się zakończyła
+     */
+    GamePhase currentGame() {
+        //TODO warunek na skończenie kamieni gracza czarnego lub białego
+        //TODO Jak ujemna liczba kamieni wpływa na ilość punktów
+        if(gameState == GamePhase.MAIN) {
+            if (movesStack[1] == -1 && movesStack[2] == -1) {
+                System.out.println(">> Partia zatrzymana: spasowanie");
+                gameState = GamePhase.CHOOSING;
+            } else if (currentStonesW == 0 && currentStonesB == 0) {
+//                System.out.println(">> Partia zakończona: brak kamieni");
+                gameState = GamePhase.CHOOSING;
+            } else
+                gameState = GamePhase.MAIN;
+            return gameState;
+        }
+
+        else if(gameState == GamePhase.CHOOSING) {
+            if(deadStoneDecision[1] == -1 && deadStoneDecision[2] == -1) {
+                System.out.println("Podwójna zgoda na zakończenie gry");
+
+                //TODO usunięcie martwych kamieni z board
+                FindWinner winnerChooser = new FindWinner();
+                if(winnerChooser.getWinner() == PlayerColor.WHITE)
+                    System.out.println(">> Zwycięzca: Biały");
+                else
+                    System.out.println(">> Zwycięzca: Czarny");
+            }
+            return gameState;
+        }
+        else
+            return GamePhase.END;
+    }
+
+    /**
+     * Klasa ustalająca zwycięzcę rozgrywki na podstawie zdobytych punktów
+     */
+    private class FindWinner {
+        /**
+         * Zwycięzca rozgrywki
+         */
+        PlayerColor winner;
+        /**
+         * Pomocnicza macierz z wartościami dla pól z określonym właścicielem terytorium
+         */
+        private int[][] infoMatrix = new int[dim][dim];
+
+        private FindWinner() {
+            int[] territoryPoints;
+            double komi = 6.5;
+
+            for(int i = 0; i < dim; i++)
+                for(int j = 0; j < dim; j++) {
+                    if(board[i][j] == null && territoryPointsBoard[i][j] == 0) {
+                        territoryPoints = territoryOwner(i, j);
+
+                        if (territoryPoints[0] == 1)
+                            whiteTerritoryPoints += territoryPoints[1];
+                        else if(territoryPoints[0] == -1)
+                            blackTerritoryPoints += territoryPoints[1];
+
+                        updateTerritoryPointsMatrix(territoryPoints[0]);
+                    }
+                    else if(board[i][j] != null && territoryPointsBoard[i][j] == 0) {
+                        if(board[i][j].getColor() == PlayerColor.WHITE) {
+                            territoryPointsBoard[i][j] = 'W';
+                        }
+                        else
+                            territoryPointsBoard[i][j] = 'B';
+                    }
+                }
+            //wyniki
+            whiteScore = whiteTerritoryPoints + totalStonesW - currentStonesW - capturedByB + komi;
+            blackScore = blackTerritoryPoints + totalStonesB - currentStonesB - capturedByW;
+
+            if(whiteScore < blackScore)
+                winner = PlayerColor.BLACK;
+            else
+                winner = PlayerColor.WHITE;
+        }
+
+        /**
+         * Metoda zwraca dwuelementową tablicę (gracz wiodący na danym terytorium oraz ilość jego punktów terytorium)
+         * dla podanych współrzędnych
+         * @param x współrzędna x
+         * @param y współrzędna y
+         * @return tablica dwuelementowa (gracz, wielkość terytorium)
+         */
+        private int[] territoryOwner(int x, int y) {
+            //Tablica o dwóch elementach: gracz wiodący ('1' - biały, '-1' - czarny) oraz ilość punktów terytorium
+            int[] territoryPoints = new int[2];
+            //Ilość punktów tego terytorium dla danego gracza
+            int count = countCrossings(x, y, 0);
+
+            if (black == white) {
+                //terytorium neutralne
+                territoryPoints[0] = 2;
+                territoryPoints[1] = count;
+            }
+            if(!black && white) {
+                //terytorium gdzie wygrywa biały
+                territoryPoints[0] = 1;
+                territoryPoints[1] = count;
+            }
+            else if(black && !white) {
+                //terytorium gdzie wygrywa czarny
+                territoryPoints[0] = -1;
+                territoryPoints[1] = count;
+            }
+            //wyzerwoanie wartości
+            white = false;
+            black = false;
+
+            return territoryPoints;
+        }
+
+        /**
+         * Metoda uzupełniająca tablicę punktów terytorium
+         * @param pointsOwner gracz prowadzący na danym terytorium
+         *      2 - brak prowadzącego
+         *      1 - biały gracz
+         *      -1 - czarny gracz
+         */
+        private void updateTerritoryPointsMatrix(int pointsOwner) {
+            for (int i = 0; i < dim; i++)
+                for (int j = 0; j < dim; j++) {
+                    if (infoMatrix[i][j] == 3) {
+                        if (pointsOwner == 2)
+                            territoryPointsBoard[i][j] = '.';
+                        else if (pointsOwner == 1)
+                            territoryPointsBoard[i][j] = 'W';
+                        else if (pointsOwner == -1)
+                            territoryPointsBoard[i][j] = 'B';
+                    }
+                }
+
+            for (int i = 0; i < infoMatrix.length; i++)
+                for (int j = 0; j < infoMatrix.length; j++)
+                    infoMatrix[i][j] = 0;
+        }
+
+        /**
+         * Metoda ustalająca ilość punktów za terytorium danego gracza
+         * @param x oznacza współrzędną x punktu terytorium
+         * @param y oznacza współrzędna y punktu terytorium
+         * @param counter oznacza ilość punktów terytorium (zapamiętanie dla rekurencji)
+         * @return ilość skrzyżowań dla tego terytorium gracza
+         */
+        private int countCrossings(int x, int y, int counter) {
+            int[] neighboursInfo = neighboursInfo(x, y);
+
+            if(infoMatrix[x][y] != 3 && board[x][y] == null) {
+                infoMatrix[x][y] = 3;
+                counter = countCrossings(x, y, ++counter);
             }
             else {
-                movesStack[1] = value;
-                movesStack[0] = 1;
+                //północ
+                //jeżeli istnieje ten sąsiad
+                if(neighboursInfo[0] != -2) {
+                    //jeżeli pole jest puste i nie zostało wcześniej sprawdzone
+                    if(neighboursInfo[0] == 0 && infoMatrix[x-1][y] != 3) {
+                        infoMatrix[x-1][y] = 3;
+                        //rekurencyjne wywołanie dla tego sąsiada
+                        counter = countCrossings(x-1, y, ++counter);
+                    }
+                    //jeżeli na polu stoi kamień biały
+                    else if(neighboursInfo[0] == 1)
+                        white = true;
+                        //jeżeli na polu stoi kamień czarny
+                    else if(neighboursInfo[0] == -1)
+                        black = true;
+                }
+                //wschód
+                if(neighboursInfo[3] != -2) {
+                    if (neighboursInfo[3] == 0 && infoMatrix[x][y + 1] != 3) {
+                        infoMatrix[x][y+1] = 3;
+                        counter = countCrossings(x, y+1, ++counter);
+                    }
+                    else if (neighboursInfo[3] == 1)
+                        white = true;
+                    else if (neighboursInfo[3] == -1)
+                        black = true;
+                }
+                //południe
+                if(neighboursInfo[1] != -2) {
+                    if (neighboursInfo[1] == 0 && infoMatrix[x+1][y] != 3) {
+                        infoMatrix[x+1][y] = 3;
+                        counter = countCrossings(x+1, y, ++counter);
+                    }
+                    else if (neighboursInfo[1] == 1)
+                        white = true;
+                    else if (neighboursInfo[1] == -1)
+                        black = true;
+                }
+                //północ
+                if(neighboursInfo[2] != -2) {
+                    if (neighboursInfo[2] == 0 && infoMatrix[x][y-1] != 3) {
+                        infoMatrix[x][y-1] = 3;
+                        counter = countCrossings(x, y-1, ++counter);
+                    }
+                    else if (neighboursInfo[2] == 1)
+                        white = true;
+                    else if (neighboursInfo[2] == -1)
+                        black = true;
+                }
             }
-            return true;
+            return counter;
         }
-        else
-            return false;
-    }
 
-    boolean currentGame() {
-        boolean end;
-        if(activePlay) {
-            if(movesStack[1] == -1 && movesStack[2] == -1) {
-                System.out.println(">> Partia zakończona: spasowanie");
-                end = false;
-                activePlay = false;
-            }
-            else if(currentStonesW == 0 && currentStonesB == 0) {
-                System.out.println(">> Partia zakończona: brak kamieni");
-                end = false;
-                activePlay = false;
-            }
+        /**
+         * Metoda tworzy tablicę czteroelenentową (po jednym elemencie dla każdego kierunku) i umieszcza w niej:
+         *      -2 - jeżeli nie istnieje ten sąsiad (brzeg)
+         *      0 - jeżeli pole jest puste
+         *      1 - jeżeli na polu stoi biały kamień
+         *      -1 - jeżeli na polu stoi czarny kamień
+         * @param x współrzędna x
+         * @param y współrzędna y
+         * @return tablica z informacjami o sąsiadach danego pola
+         */
+        private int[] neighboursInfo(int x, int y) {
+            int exp[] = new int[4];
+
+            if(!isValidLine(x, Direction.NORTH))
+                exp[0] = -2;
+            else if(positionIsFree(x-1, y))
+                exp[0] = 0;
+            else if(board[x-1][y].getColor() == PlayerColor.WHITE)
+                exp[0] = 1;
             else
-                end = true;
+                exp[0] = -1;
 
-            // Gra zakończyła się - podliczenie wyniku
-            if(!end) {
-                System.out.println(">> Obliczanie wyniku...");
-//                int winner = foundWinner();
+            if(!isValidLine(x, Direction.SOUTH))
+                exp[1] = -2;
+            else if(positionIsFree(x+1, y))
+                exp[1] = 0;
+            else if(board[x+1][y].getColor() == PlayerColor.WHITE)
+                exp[1] = 1;
+            else
+                exp[1] = -1;
 
-//                if(winner >= 0)
-//                    System.out.println(">> Zwycięzca: Biały");
-//                else if (winner == -1)
-//                    System.out.println(">> Zwycięzca: Czarny");
-            }
-            return end;
+            if(!isValidLine(y, Direction.WEST))
+                exp[2] = -2;
+            else if(positionIsFree(x, y-1))
+                exp[2] = 0;
+            else if(board[x][y-1].getColor() == PlayerColor.WHITE)
+                exp[2] = 1;
+            else
+                exp[2] = -1;
+
+            if(!isValidLine(y, Direction.EAST))
+                exp[3] = -2;
+            else if(positionIsFree(x, y+1))
+                exp[3] = 0;
+            else if(board[x][y+1].getColor() == PlayerColor.WHITE)
+                exp[3] = 1;
+            else
+                exp[3] = -1;
+
+            return exp;
         }
-        else
-            return false;
+
+        /**
+         * Zwraca zwycięzce partii
+         * @return kolor zwycięzcy
+         */
+        private PlayerColor getWinner() {
+            return winner;
+        }
     }
 
-//    private int foundWinner() {
-//        int[] territoryPoints;
-//
-//        for(int i = 0; i < dim; i++)
-//            for(int j = 0; j < dim; j++) {
-//                if(board[i][j] != null && territoryPointsBoard[i][j] == 0) {
-//                    territoryPoints =
-//                }
-//            }
-//    }
+    void updateDeadStoneDecision(int move) {
+        System.out.println("Wstawiam " + move);
+        if (deadStoneDecision[0] == 1) {
+            deadStoneDecision[2] = move;
+            deadStoneDecision[0] = 2;
+        }
+        else {
+            deadStoneDecision[1] = move;
+            deadStoneDecision[0] = 1;
+        }
+        System.out.println("0: " + deadStoneDecision[0] + ", 1: " + deadStoneDecision[1] + ", 2: " + deadStoneDecision[2]);
+    }
 
-//    private int[] function(int x, int y) {
-//        int[] emptyPoints = new int[2];
-//        int count = countIntersections(x, y, 0, )
-//    }
-//
-//    private int countIntersections(int x, int y, int counter, PlayerColor color) {
-//        int[] exp;
-//        exp =
-//    }
+    /**
+     * Metoda przywraca grę do poprzedniej fazy wstawiania kamieni
+     */
+    void returnToMainPhase() {
+        gameState = GamePhase.MAIN;
+        System.out.println("STATE GAME: " + gameState);
+        movesStack = new int[3];
+        deadStones = new boolean[dim][dim];
+        deadStoneDecision = new int[3];
+    }
+
+    void removeDeadStones() {
+        for(int i = 0; i < dim; i++) {
+            for(int j = 0; j < dim; j++) {
+                if(deadStones[i][j]) {
+                    board[i][j] = null;
+                    consoleBoard[i][j] = '.';
+                }
+            }
+        }
+    }
 
     /**
      * Drukuje w konsoli obecny wygląd macierzy
@@ -677,6 +981,8 @@ class Game implements Serializable {
         System.out.print(letters);
     }
 
+    //Gettery
+
     int getTotalStonesB() {
         return totalStonesB;
     }
@@ -685,8 +991,8 @@ class Game implements Serializable {
         return totalStonesW;
     }
 
-    PlayerColor getMove() {
-        return currentMove;
+    PlayerColor getCurrentPlayer() {
+        return currentPlayer;
     }
 
     Stone[][] getBoard() {
@@ -695,5 +1001,49 @@ class Game implements Serializable {
 
     char[][] getTerritoryPointsBoard() {
         return territoryPointsBoard;
+    }
+
+    int getNumberStonesOnBoard() {
+        return totalStonesB-currentStonesB-capturedByW+totalStonesW-currentStonesW-capturedByB;
+    }
+
+    int getNumberBlackStonesOnBoard() {
+        return totalStonesB-currentStonesB-capturedByB;
+    }
+
+    int getNumberWhiteStonesOnBoard() {
+        return totalStonesW-currentStonesW-capturedByW;
+    }
+
+    int getCurrentStonesB() {
+        return currentStonesB;
+    }
+
+    int getCurrentStonesW() {
+        return currentStonesW;
+    }
+
+    int getCapturedStonesW() {
+        return capturedByB;
+    }
+
+    int getCapturedStonesB() {
+        return capturedByW;
+    }
+
+    int getBlackTerritoryPoints() {
+        return blackTerritoryPoints;
+    }
+
+    int getWhiteTerritoryPoints() {
+        return whiteTerritoryPoints;
+    }
+
+    double getBlackScore() {
+        return blackScore;
+    }
+
+    double getWhiteScore() {
+        return whiteScore;
     }
 }
