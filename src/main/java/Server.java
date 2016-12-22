@@ -11,6 +11,12 @@ public class Server extends Thread{
     private final int SocketNumber = 65535;
     private final int time = 1000;
     private final int MaxClient = 1000;
+    private GameWindow gfirst9;
+    private GameWindow gsecond9;
+    private GameWindow gfirst13;
+    private GameWindow gsecond13;
+    private GameWindow gfirst19;
+    private GameWindow gsecond19;
 
     Server(){
         super();
@@ -37,6 +43,7 @@ public class Server extends Thread{
         while (listen) {
             try {
                 socket = serverSocket.accept();
+                System.out.print("ACHTUNG!!! \n");
                 System.out.print(socket);
                 if (socket != null) {
                     if (clientAgents.size() == MaxClient) {
@@ -77,11 +84,14 @@ public class Server extends Thread{
                             flaga9 = true;
                         }
                         else {
-                            GameWindow.window.manager = new Client(null, SocketNumber - first9, true);
-                            GameWindow.window.manager = new Client("localhost", SocketNumber - i, false);
+                            gfirst9 = new GameWindow(9);
+                            gfirst9.window.manager = new Client(null, SocketNumber - first9, true);
+                            gsecond9 = new GameWindow(9);
+                            gsecond9.window.manager = new Client("localhost", SocketNumber - i, false);
                             clientAgents.get(i).setHasPartner(true);
                             clientAgents.get(first9).setHasPartner(true);
                             flaga9=false;
+                            //TODO:AGATA trzeba wyłączyć okienko startowe
                         }
                     case 13:
                         if(!flaga13) {
@@ -89,22 +99,26 @@ public class Server extends Thread{
                             flaga13 = true;
                         }
                         else {
-                            GameWindow.window.manager = new Client(null, SocketNumber - first13, true);
+                            gfirst13 = new GameWindow(13);
+                            gfirst13.window.manager = new Client(null, SocketNumber - first13, true);
                             System.out.print("skoncz z liniami glupolu");
-                            GameWindow.window.manager = new Client("localhost", SocketNumber - i, false);
+                            gsecond13= new GameWindow(13);
+                            gsecond13.window.manager = new Client("localhost", SocketNumber - i, false);
                             clientAgents.get(i).setHasPartner(true);
                             clientAgents.get(first13).setHasPartner(true);
                             flaga13=false;
                         }
                     case 19:
+
                         if(!flaga19) {
                             first19 = i;
                             flaga19=true;
                         }
                         else {
-                            System.out.print("Ciag dalszy \n");
-                            GameWindow.window.manager = new Client(null, SocketNumber-first19-1, true);
-                            GameWindow.window.manager = new Client("localhost", SocketNumber - i -1, false);
+                            gfirst19=new GameWindow(19);
+                            gfirst19.window.manager = new Client(null, SocketNumber-first19-1, true);
+                            gsecond19=new GameWindow(19);
+                            gsecond19.window.manager = new Client("localhost", SocketNumber - i -1, false);
                             clientAgents.get(i).setHasPartner(true);
                             clientAgents.get(first19).setHasPartner(true);
                             flaga19=false;
