@@ -17,8 +17,8 @@ public class StartingWindow extends JFrame implements ActionListener {
     private JButton two19;
     private JButton two13;
     private JButton two9;
-    private Socket socket;
-    private ClientAgent client;
+    private Socket socket1;
+
 
     StartingWindow() {
         window = this;
@@ -98,7 +98,7 @@ public class StartingWindow extends JFrame implements ActionListener {
         Object source = e.getSource();
         //TODO po kliknięciu następuje
         try{
-             socket = new Socket("localhost",65535);
+             socket1 = new Socket("localhost",65333);
         } catch (UnknownHostException e1) {
             e1.printStackTrace();
         } catch (IOException e1) {
@@ -123,11 +123,11 @@ public class StartingWindow extends JFrame implements ActionListener {
         }
         if(source == two13) {
             System.out.println("Tworze gre 13x13 dla dwóch graczy");
-            client.setDim(13);
+//            client.setDim(13);
         }
         if(source == two9) {
             System.out.println("Tworze gre 9x9 dla dwóch graczy");
-            client.setDim(9);
+//            client.setDim(9);
         }
     }
 }

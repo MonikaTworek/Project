@@ -34,20 +34,17 @@ public class Client extends ClientManager {
      * @param _port port przeciwnika
      */
     Client(String _ip_server, int _port, boolean firstPlayer) throws IOException {
-		/*
+		/**
 	  	* IP serwera
 	 	*/
         String socketName;
-		/*
+		/**
 		* port serwera
 	 	*/
         port = _port;
 
         if(firstPlayer) {
-            port = _port;
             playerColor = PlayerColor.BLACK;
-            s= new ServerSocket(port);
-            socket = s.accept();
             System.out.print("[GAME] ClientManager started \n");
             Wait wait = new Wait();
             wait.start();
@@ -56,7 +53,6 @@ public class Client extends ClientManager {
         if(!firstPlayer) {
             System.out.print("Client two go to game \n");
             socketName = _ip_server;
-            port = _port;
             playerColor = PlayerColor.WHITE;
             try {
                 socket = new Socket(socketName, port);
@@ -278,4 +274,5 @@ public class Client extends ClientManager {
             catch (Exception ignored) {}
         }
     }
+
 }
