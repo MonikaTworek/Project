@@ -17,10 +17,10 @@ import javax.imageio.*;
 //TODO okno(gra) jako obiekt posiadający stany (wzorzec). Send i inne przyciski powodują przejścia pomiędzy stanami
 class GameWindow extends JFrame {
     private JCheckBoxMenuItem jCheckBoxMenuItem1;
-    MainPanel jPanel2;
+    static MainPanel jPanel2;
     JTextPane jTextPane1;
     private JLabel jLabel16;
-    private JTabbedPane jTabbedPane1;
+    private static JTabbedPane jTabbedPane1;
     private JTextField jTextField1;
     private JTextField jTextField2;
     private JTextField jTextField3;
@@ -33,26 +33,26 @@ class GameWindow extends JFrame {
     private JTextField jTextField10;
     private JTextField jTextField11;
     private JTextField jTextField12;
-    Log logArea;
+    static Log logArea;
     private JButton buttonAgree;
     private JButton buttonPass;
 
     static GameWindow window;
     Client manager;
-    boolean gameStopped;
+    static boolean gameStopped;
     private int dimension;
 
+
+
     //TODO:ZARYS SINGLETONA. można poprawić, by było lepiej...
-    static GameWindow instance;
+    /*static GameWindow instance;
     public static GameWindow GetInstance(int size){
         if (instance==null){
             if (instance.dimension != size)
                 instance=new GameWindow(size);
         }
         return instance;
-    }
-
-
+    }*/
     GameWindow(int dim) {
         window = this;
         dimension = dim;
