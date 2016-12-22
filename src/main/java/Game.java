@@ -1,3 +1,7 @@
+import Basics.Direction;
+import Basics.PlayerColor;
+import Basics.Stone;
+
 import java.io.Serializable;
 
 /**
@@ -77,7 +81,7 @@ class Game implements Serializable {
     /**
      * Ostatnie dwie decyzje podjęte przez graczy w fazie 'Choosing'
      */
-    int[] deadStoneDecision;
+    private int[] deadStoneDecision;
 
     /**
      * Numer poprzedniej grupy
@@ -103,11 +107,6 @@ class Game implements Serializable {
      * Obecny ruch
      */
     private PlayerColor currentPlayer;
-
-    /**
-     * Obecna faza gry
-     */
-    GamePhase gameState;
 
     /**
      * Wynik gracza czarnego
@@ -151,25 +150,21 @@ class Game implements Serializable {
         consoleBoard = new char[dim][dim];
         territoryPointsBoard = new char[dim][dim];
         deadStones = new boolean[dim][dim];
-        for(int i = 0; i < dim; i++)
-            for(int j = 0; j < dim; j++)
-                deadStones[i][j] = false;
+//        for(int i = 0; i < dim; i++)
+//            for(int j = 0; j < dim; j++)
+//                deadStones[i][j] = false;
         deadStoneDecision = new int[3];
         currentPlayer = PlayerColor.BLACK;
-
         /*
 		* Przechowuje historię stanu po wprowadzaniu kamieni ([indeks][lokalizacja][lokalizacja],
 		* gdzie -1 czarny, 1 biały, 0 NULL.
 		*/
         historyBoard = new int[dim * dim][dim][dim];
         movesStack = new int[3];
-
         index = 0;
 
         // Stwarza początkową czystą planszę konsolową
-        consoleMatchPrinter(dim);
-
-        gameState = GamePhase.MAIN;
+//        consoleMatchPrinter(dim);
     }
 
     /**
@@ -212,7 +207,7 @@ class Game implements Serializable {
 
     /**
      * Metoda wywołująca różne metody kontroli wstawiania kamienia. Po sprawdzeniu, że punkt (x,y) jest poprawny,
-     * tworzy obiekt typu Stone i umieszcza go w (X,Y) planszy. Zwraca obiekt kamienia wpisanego lub NULL
+     * tworzy obiekt typu Basics.Stone i umieszcza go w (X,Y) planszy. Zwraca obiekt kamienia wpisanego lub NULL
      *
      * @param stoneColor oznacza kolor gracza, który położył kamień
      * @param x oznacza współrzędną X na planszy
@@ -222,12 +217,12 @@ class Game implements Serializable {
     Stone updateBoard(PlayerColor stoneColor, int x, int y) {
         // Sprawdź wprowadzone współrzędne
         if(!isInsideBoardRange(x, y)) {
-            System.out.println(">> Nieprawidłowy zakres");
+            System.out.print(">> Nieprawidłowy zakres\n");
             return (null);
         }
         //Sprawdź, czy pozycja jest wolna
         else if(!positionIsFree(x, y)) {
-            System.out.println(">> Pozycja zajęta");
+            System.out.print(">> Pozycja zajęta\n");
             return(null);
         }
         else {
@@ -244,11 +239,9 @@ class Game implements Serializable {
 
             // Wstaw kamień na planszę
             board[x][y] = newStone;
-
             updateBoardHistory();
-
             if(koChecker(index)) {
-                System.out.println(">> Ruch niedozwolony: powtórzone KO.");
+                System.out.print(">> Ruch niedozwolony: powtórzone KO\n");
                 historyBoard[index][x][y] = 0;
                 board[x][y] =  null;
                 newStone = null;
@@ -260,22 +253,20 @@ class Game implements Serializable {
                 if(libertiesOfGroup(actualGroup) == 0) {
                     int[] groupsWithoutLiberties = getGroupsToKill(actualGroup, newStone.getColor());
                     if(groupsWithoutLiberties[0] == 0) {
-                        System.out.println(">> Ruch niedozwolony: próba samobójcza");
+                        System.out.print(">> Ruch niedozwolony: próba samobójcza\n");
                         board[x][y] = null;
                         groupsBoard[x][y] = 0;
                         newStone = null;
                     }
                     else {
                         if (groupsWithoutLiberties[0] >= 1) {
-                            System.out.println(">> Wzięto do niewoli (sytuacja niejednoznaczna)");
-
-                            for(int i =  0; i  <= groupsWithoutLiberties[0]; i++)
+                            System.out.print(">> Wzięto do niewoli (sytuacja niejednoznaczna)\n");
+                            for(int i =  1; i  <= groupsWithoutLiberties[0]; i++)
                                 killGroup(groupsWithoutLiberties[i], newStone.getColor());
                             if(newStone.getColor() == PlayerColor.WHITE)
                                 currentStonesW--;
                             else
                                 currentStonesB--;
-
                             changeTurn();
                         }
                     }
@@ -285,7 +276,7 @@ class Game implements Serializable {
                     int tmpW = capturedByW, tmpB = capturedByB;
                     captureChecker(actualGroup, newStone);
                     if(tmpW != capturedByW || tmpB != capturedByB)
-                        System.out.println(">> Wzięto do niewoli");
+                        System.out.print(">> Wzięto do niewoli\n");
                     if(newStone.getColor() == PlayerColor.WHITE)
                         currentStonesW--;
                     else
@@ -293,18 +284,56 @@ class Game implements Serializable {
                     changeTurn();
                 }
             }
-
             if (newStone != null) {
                 updateConsoleBoard(newStone);
                 updateGroupBoard(newStone);
                 updateCurrentIndex();
                 updateMovesStack(1);
             }
-
             return(newStone);
         }
     }
 
+//    public void matrixIntToChar() {
+//        int[][] int_mat = groupsBoard;
+//        char[][] char_mat = new char[int_mat.length][int_mat.length];
+//        for (int i = 0; i < int_mat.length; i++)
+//            for (int j = 0; j < int_mat.length; j++)
+//                char_mat[i][j] = (char) (int_mat[i][j] + '0');
+//
+//        int lines = 0;
+//        char[][] matrix = char_mat;
+//
+//        String string19 = "     A B C D E F G H I J K L M N O P Q R S\n";
+//        String letters;
+//        if(dim == 19)
+//            letters = string19;
+//        else if (dim == 13)
+//            letters = string19.substring(0, 31) + '\n';
+//        else
+//            letters = string19.substring(0, 23) + "\n";
+//
+//        System.out.print("\n" + letters);
+//        for (char[] m : matrix)
+//            for (int j = 0; j < matrix.length; j++) {
+//                if (j == 0) {
+//                    if (lines < 10) {
+//                        System.out.print("  " + lines + " ");
+//                        lines++;
+//                    }
+//                    else {
+//                        System.out.print(" " + lines + " ");
+//                        lines++;
+//                    }
+//                }
+//                if (j == matrix.length - 1)
+//                    System.out.println(" " + m[j] + "  " + (lines - 1));
+//                else
+//                    System.out.print(" " + m[j]);
+//            }
+//        System.out.print(letters);
+//
+//    }
     /**
      * Sprawdza, czy współrzędne (x,y) mieszczą się w obrębie planszy
      * @param x współrzędna X planszy
@@ -321,7 +350,7 @@ class Game implements Serializable {
      * @param y współrzędna Y planszy
      * @return true, jeżeli pole jest wolne, false - w przeciwynm wypadku
      */
-    boolean positionIsFree(int x, int y) {
+    private boolean positionIsFree(int x, int y) {
         return (board[x][y] == null);
     }
 
@@ -345,7 +374,6 @@ class Game implements Serializable {
      * @return poprawny numer grupy (jeżeli istnieje), -100 - jezeli kierunek podano nieprawidłowo,
      * -1 - jeżeli brak sąsiada ze wskazanej strony.
      */
-    //TODO skrócić to
     int getAdjacentGroup(Stone stone, boolean hasSameColor, Direction direction) {
         int adjGroup = -100;
         PlayerColor stoneColor = stone.getColor();
@@ -427,7 +455,8 @@ class Game implements Serializable {
      * @return <code>false</code> w przypadku, gdy podana współrzędna kamienia znajduje sie
      * na brzegu planszy, <code>true</code> - w przeciwnym wypadku
      */
-    boolean isValidLine(int n, Direction direction) {
+    private boolean isValidLine(int n, Direction direction) {
+        //przypadek dla "North" i "West"
         if(direction.equals(Direction.NORTH) || direction.equals(Direction.WEST))
             return (n > 0);
         //przypadek dla "South" i "East"
@@ -465,7 +494,6 @@ class Game implements Serializable {
         }
         else
             return false;
-
         return true;
     }
 
@@ -627,7 +655,8 @@ class Game implements Serializable {
      * @param value wartość do wstawienia
      */
     private void updateMovesStack(int value) {
-        if (movesStack[0] == 1) {
+        //movesStack[0] - 1, gdy kamień stawiał BLACK, 2, gdy kamień dodał WHITE
+        if (currentPlayer == PlayerColor.BLACK) {
             movesStack[2] = value;
             movesStack[0] = 2;
         }
@@ -638,39 +667,52 @@ class Game implements Serializable {
     }
 
     /**
-     * Metoda zwracająca aktualny stan gry.
-     * @return <code>true</code>, jeżeli gra nadal trwa, <code>false</code>, gdy gra się zakończyła
+     * Metoda dodająca na stos nową decyzję gracza
+     * @param move wykonany przez gracza ruch
      */
-    GamePhase currentGame() {
-        //TODO warunek na skończenie kamieni gracza czarnego lub białego
-        //TODO Jak ujemna liczba kamieni wpływa na ilość punktów
-        if(gameState == GamePhase.MAIN) {
-            if (movesStack[1] == -1 && movesStack[2] == -1) {
-                System.out.println(">> Partia zatrzymana: spasowanie");
-                gameState = GamePhase.CHOOSING;
-            } else if (currentStonesW == 0 && currentStonesB == 0) {
-//                System.out.println(">> Partia zakończona: brak kamieni");
-                gameState = GamePhase.CHOOSING;
-            } else
-                gameState = GamePhase.MAIN;
-            return gameState;
+    void updateDeadStoneDecision(int move) {
+        if (currentPlayer == PlayerColor.WHITE) {
+            deadStoneDecision[2] = move;
+            deadStoneDecision[0] = 2;
         }
-
-        else if(gameState == GamePhase.CHOOSING) {
-            if(deadStoneDecision[1] == -1 && deadStoneDecision[2] == -1) {
-                System.out.println("Podwójna zgoda na zakończenie gry");
-
-                //TODO usunięcie martwych kamieni z board
-                FindWinner winnerChooser = new FindWinner();
-                if(winnerChooser.getWinner() == PlayerColor.WHITE)
-                    System.out.println(">> Zwycięzca: Biały");
-                else
-                    System.out.println(">> Zwycięzca: Czarny");
-            }
-            return gameState;
+        else {
+            deadStoneDecision[1] = move;
+            deadStoneDecision[0] = 1;
         }
+    }
+
+    /**
+     * Metoda sprawdzająca, czy poprzedni użytkownik spasował
+     * @return <code>true</code> w przypadku spasowania, <code>false</code> w przeciwnym razie
+     */
+    boolean ifDoublePass(PlayerColor currentTurn) {
+        if(currentTurn == PlayerColor.WHITE)
+            return (movesStack[1] == -1 && movesStack[0] == 1);
         else
-            return GamePhase.END;
+            return (movesStack[2] == -1 && movesStack[0] == 2);
+    }
+
+    /**
+     * Metoda sprawdzająca, czy poprzedni użytkownik zgodził się na zakończenie rozgrywki
+     * @return <code>true</code> w przypadku zgody, <code>false</code> w przeciwnym razie
+     */
+    boolean ifDoubleAgree(PlayerColor currentTurn) {
+        if(currentTurn == PlayerColor.WHITE)
+            return (deadStoneDecision[1] == -1 && deadStoneDecision[0] == 1);
+        else
+            return (deadStoneDecision[2] == -1 && deadStoneDecision[0] == 2);
+    }
+
+    /**
+     * Metoda wykonująca
+     */
+    void endGame() {
+        removeDeadStones();
+        FindWinner winnerChooser = new FindWinner();
+        if(winnerChooser.getWinner() == PlayerColor.WHITE)
+            System.out.println(">> Zwycięzca: Biały");
+        else
+            System.out.println(">> Zwycięzca: Czarny");
     }
 
     /**
@@ -909,31 +951,28 @@ class Game implements Serializable {
         }
     }
 
-    void updateDeadStoneDecision(int move) {
-        System.out.println("Wstawiam " + move);
-        if (deadStoneDecision[0] == 1) {
-            deadStoneDecision[2] = move;
-            deadStoneDecision[0] = 2;
-        }
-        else {
-            deadStoneDecision[1] = move;
-            deadStoneDecision[0] = 1;
-        }
-        System.out.println("0: " + deadStoneDecision[0] + ", 1: " + deadStoneDecision[1] + ", 2: " + deadStoneDecision[2]);
-    }
-
     /**
      * Metoda przywraca grę do poprzedniej fazy wstawiania kamieni
      */
     void returnToMainPhase() {
-        gameState = GamePhase.MAIN;
-        System.out.println("STATE GAME: " + gameState);
         movesStack = new int[3];
         deadStones = new boolean[dim][dim];
         deadStoneDecision = new int[3];
     }
 
-    void removeDeadStones() {
+    /**
+     * Metoda dodająca do tablicy martwych kamieni wybór gracza
+     * @param x współrzędna x kamienia
+     * @param y współrzędna y kamienia
+     */
+    void addToDeadStones(int x, int y) {
+        deadStones[x][y] = !deadStones[x][y];
+    }
+
+    /**
+     * Metoda usuwająca z planszy kamienie martwe
+     */
+    private void removeDeadStones() {
         for(int i = 0; i < dim; i++) {
             for(int j = 0; j < dim; j++) {
                 if(deadStones[i][j]) {

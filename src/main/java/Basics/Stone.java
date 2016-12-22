@@ -1,9 +1,13 @@
+package Basics;
+
+import Basics.PlayerColor;
+
 import java.io.*;
 
 /**
  * Klasa jednego kamienia na planszy
  */
-class Stone implements Serializable {
+public class Stone implements Serializable {
     /**
      * Współrzędna x kamienia
      */
@@ -32,7 +36,7 @@ class Stone implements Serializable {
      * @param color oznacza, czy kamień jest biały
      * @param group wskazuje grupę, do której należy kamień
      */
-    Stone(int x, int y, PlayerColor color, int group) {
+    public Stone(int x, int y, PlayerColor color, int group) {
         this.x = x;
         this.y = y;
         this.color = color;
@@ -43,7 +47,7 @@ class Stone implements Serializable {
      * Zwraca true, jeżeli kamień jest biały
      * @return oznacza kolor
      */
-    PlayerColor getColor() {
+    public PlayerColor getColor() {
         return(color);
     }
 
@@ -51,7 +55,7 @@ class Stone implements Serializable {
     /**
      * Setuje numer grupy
      */
-    void setGroup(int g) {
+    public void setGroup(int g) {
         group = g;
     }
 
@@ -59,7 +63,7 @@ class Stone implements Serializable {
      * Zwraca grupę, do której należy kamień
      * @return oznacza grupę
      */
-    int getGroup() {
+    public int getGroup() {
         return(group);
     }
 
@@ -67,7 +71,7 @@ class Stone implements Serializable {
      * Zwraca współrzędną X kamienia
      * @return współrzędna X
      */
-    int getX() {
+    public int getX() {
         return(x);
     }
 
@@ -75,7 +79,7 @@ class Stone implements Serializable {
      * Zwraca współrzędną Y kamienia
      * @return współrzędna Y
      */
-    int getY() {
+    public int getY() {
         return(y);
     }
 }
