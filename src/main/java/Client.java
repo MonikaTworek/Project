@@ -3,6 +3,7 @@ import Basics.Stone;
 
 import javax.swing.*;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -32,7 +33,7 @@ public class Client extends ClientManager {
      * @param _ip_server adres IP przeciwnika
      * @param _port port przeciwnika
      */
-    Client(String _ip_server, int _port, boolean firstPlayer) {
+    Client(String _ip_server, int _port, boolean firstPlayer) throws IOException {
 		/*
 	  	* IP serwera
 	 	*/
@@ -45,11 +46,15 @@ public class Client extends ClientManager {
         if(firstPlayer) {
             port = _port;
             playerColor = PlayerColor.BLACK;
+            s= new ServerSocket(port);
+            socket = s.accept();
+            System.out.print("[GAME] ClientManager started \n");
             Wait wait = new Wait();
             wait.start();
         }
 
         if(!firstPlayer) {
+            System.out.print("Client two go to game \n");
             socketName = _ip_server;
             port = _port;
             playerColor = PlayerColor.WHITE;

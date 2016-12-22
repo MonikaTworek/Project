@@ -1,7 +1,8 @@
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.io.IOException;
+
 
 /**
  * Klasa okna pozwalająca wybrać tryb klient/serwer
@@ -106,10 +107,11 @@ class OpenSocketSession extends JFrame {
             check();
 
             int port = Integer.parseInt(jTextField1.getText());
-            GameWindow.window.manager = new Client(null, port, true);
-//            GameWindow.window.manager = new FirstClientManager(port);
-//                GameWindow.main.chat = new ChatServer(1234);
-
+            try {
+                GameWindow.window.manager = new Client(null, port, true);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
             setVisible(false);
         });
 
@@ -129,7 +131,6 @@ class OpenSocketSession extends JFrame {
 
         jLabel3.setFont(new Font("Dialog", 0, 12));
         jLabel3.setText("port");
-        //łups
         jLabel3.setVisible(false);
         jPanel4.add(jLabel3);
         jLabel3.setBounds(20, 50, 31, 15);
@@ -146,10 +147,11 @@ class OpenSocketSession extends JFrame {
 
             String ip = jTextField2.getText();
             int port = Integer.parseInt(jTextField3.getText());
-            GameWindow.window.manager = new Client(ip, port, false);
-//                GameWindow.window.manager = new SecondClientManager(ip, port);
-//                GameWindow.window.chat = new ChatClient(ip, 1234);
-
+            try {
+                GameWindow.window.manager = new Client(ip, port, false);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
             setVisible(false);
         });
 
@@ -180,16 +182,6 @@ class OpenSocketSession extends JFrame {
 
                 GameWindow.window.manager = null;
             }
-
-//            if (MainWindow.main.chat != null) {
-//                if (MainWindow.main.chat.s != null)
-//                    MainWindow.main.chat.s.close();
-//
-//                if (MainWindow.main.chat.socket != null)
-//                    MainWindow.main.chat.socket.close();
-//
-//                MainWindow.main.chat = null;
-//            }
         }
         catch (Exception ec) {
             ec.printStackTrace();

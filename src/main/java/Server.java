@@ -13,8 +13,6 @@ public class Server extends Thread{
     private final int MaxClient = 1000;
     private GameWindow gfirst9;
     private GameWindow gsecond9;
-    private GameWindow gfirst13;
-    private GameWindow gsecond13;
     private GameWindow gfirst19;
     private GameWindow gsecond19;
 
@@ -42,38 +40,36 @@ public class Server extends Thread{
         Socket socket;
         while (listen) {
             try {
+                //System.out.print("Zima \n");
                 socket = serverSocket.accept();
-                System.out.print("ACHTUNG!!! \n");
-                System.out.print(socket);
                 if (socket != null) {
                     if (clientAgents.size() == MaxClient) {
                         (new ObjectOutputStream(socket.getOutputStream())).writeObject(0);
                     } else {
                         ClientAgent clientAgent = new ClientAgent(socket);
                         clientAgents.add(clientAgent);
+                        System.out.print("jol jol \n");
                         //TODO: różne serwery na różne rodzaje gier? bo wtedy z automatu mają dim podane, bo tak nie wiem jak przekazać
                     }
                 }
                 toPair();
+                System.out.print("check \n");
             }
             catch (IOException e){
             }
         }
     }
-
+    //TODO:przy iksie w okienku. czyli robota Agaty :P
     public void deleteClient(ClientAgent clientAgent){
         clientAgent.disconnect();
         clientAgents.remove(clientAgent);
     }
 
 
-    public void toPair(){
-        System.out.print("wszedło \n");
+    public void toPair() throws IOException {
         int first19 = 0;
-        int first13 = 0;
         int first9 = 0;
         boolean flaga19=false;
-        boolean flaga13=false;
         boolean flaga9=false;
         for (int i = 0; i < clientAgents.size(); i++) {
             if (!clientAgents.get(i).getHasPartner()) {
@@ -93,31 +89,20 @@ public class Server extends Thread{
                             flaga9=false;
                             //TODO:AGATA trzeba wyłączyć okienko startowe
                         }
-                    case 13:
-                        if(!flaga13) {
-                            first13 = i;
-                            flaga13 = true;
-                        }
-                        else {
-                            gfirst13 = new GameWindow(13);
-                            gfirst13.window.manager = new Client(null, SocketNumber - first13, true);
-                            System.out.print("skoncz z liniami glupolu");
-                            gsecond13= new GameWindow(13);
-                            gsecond13.window.manager = new Client("localhost", SocketNumber - i, false);
-                            clientAgents.get(i).setHasPartner(true);
-                            clientAgents.get(first13).setHasPartner(true);
-                            flaga13=false;
-                        }
                     case 19:
 
                         if(!flaga19) {
                             first19 = i;
                             flaga19=true;
-                        }
-                        else {
                             gfirst19=new GameWindow(19);
                             gfirst19.window.manager = new Client(null, SocketNumber-first19-1, true);
+                            System.out.print(flaga19);
+
+                        }
+                        else {
+                            System.out.print("TWo Check \n");
                             gsecond19=new GameWindow(19);
+                            System.out.print("Check \n");
                             gsecond19.window.manager = new Client("localhost", SocketNumber - i -1, false);
                             clientAgents.get(i).setHasPartner(true);
                             clientAgents.get(first19).setHasPartner(true);
