@@ -127,11 +127,8 @@ class GameWindow extends JFrame {
                 }
 
                 public void mouseClicked(MouseEvent e) {}
-
                 public void mouseReleased(MouseEvent e) {}
-
                 public void mouseEntered(MouseEvent e) {}
-
                 public void mouseExited(MouseEvent e) {}
             });
             addMouseMotionListener(new MouseMotionListener() {

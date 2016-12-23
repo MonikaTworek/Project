@@ -151,7 +151,7 @@ class Bot extends ClientManager {
                                 System.out.println("Received second pass");
                                 GameWindow.gameStopped = true;
                                 GameWindow.window.changePhase(true);
-                            }`
+                            }
                         }
                         //received to delete
                         else if (x >= 200 && y >= 200) {
@@ -193,7 +193,7 @@ class Bot extends ClientManager {
             }
         }
 
-        public int 
+        //public int
     }
 }
 

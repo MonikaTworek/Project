@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -89,6 +90,7 @@ public class StartingWindow extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
+        PrintWriter out_txt;
         try{
              socket = new Socket("localhost",65333);
         } catch (UnknownHostException e1) {
@@ -108,12 +110,24 @@ public class StartingWindow extends JFrame implements ActionListener {
 //        client=new ClientAgent(socket);
         if(source == two19) {
             System.out.println("Tworze gre 19x19 dla dwóch graczy");
-//            client.setDim(19);
+            try {
+                out_txt = new PrintWriter(socket.getOutputStream(), true);
+                out_txt.println(19);
+                socket.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
             setVisible(false);
         }
         if(source == two9) {
             System.out.println("Tworze gre 9x9 dla dwóch graczy");
-            client.setDim(9);
+            try {
+                out_txt = new PrintWriter(socket.getOutputStream(), true);
+                out_txt.println(9);
+                socket.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
             setVisible(false);
         }
     }

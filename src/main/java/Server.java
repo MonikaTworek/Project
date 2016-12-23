@@ -15,6 +15,9 @@ public class Server extends Thread{
     private GameWindow gsecond9;
     private GameWindow gfirst19;
     private GameWindow gsecond19;
+    private OpenSocketSession open1;
+    private OpenSocketSession open2;
+    Socket socket;
 
     Server(){
         super();
@@ -37,7 +40,6 @@ public class Server extends Thread{
     }
 
     public void run() {
-        Socket socket;
         while (listen) {
             try {
                 socket = serverSocket.accept();
@@ -48,7 +50,13 @@ public class Server extends Thread{
                         (new ObjectOutputStream(socket.getOutputStream())).writeObject(0);
                     } else {
                         ClientAgent clientAgent = new ClientAgent(socket);
+                        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                        String tmp = in.readLine();
+                        StringTokenizer t = new StringTokenizer(tmp, "-");
+                        int dim = Integer.parseInt(t.nextToken());
+                        clientAgent.setDim(dim);
                         clientAgents.add(clientAgent);
+                        //TODO:DIM!!!!!!!!!!!
                         toPair();
                         //TODO: różne serwery na różne rodzaje gier? bo wtedy z automatu mają dim podane, bo tak nie wiem jak przekazać
                     }
@@ -88,19 +96,15 @@ public class Server extends Thread{
                             clientAgents.get(first9).setHasPartner(true);
                             flaga9=false;
                         }
+                        break;
                     case 19:
-
                         if(!flaga19) {
                             first19 = i;
                             flaga19=true;
                         }
                         else {
                             gfirst19=new GameWindow(19);
-
                             gfirst19.window.manager = new Client(null, SocketNumber-first19-1, true);
-                            System.out.print(SocketNumber-first19);
-                            System.out.print("\n");
-
                             gsecond19=new GameWindow(19);
                             gsecond19.window.manager = new Client("localhost", SocketNumber -first19 -1, false);
 
@@ -109,6 +113,7 @@ public class Server extends Thread{
                             clientAgents.get(first19).setHasPartner(true);
                             flaga19=false;
                         }
+                        break;
                 }
 
             }
