@@ -42,8 +42,6 @@ class GameWindow extends JFrame {
     static boolean gameStopped;
     private int dimension;
 
-
-
     //TODO:ZARYS SINGLETONA. można poprawić, by było lepiej...
     /*static GameWindow instance;
     public static GameWindow GetInstance(int size){
@@ -53,6 +51,7 @@ class GameWindow extends JFrame {
         }
         return instance;
     }*/
+
     GameWindow(int dim) {
         window = this;
         dimension = dim;
@@ -322,8 +321,16 @@ class GameWindow extends JFrame {
             public void windowClosing(WindowEvent e) {
                 String p = "Do you want to exit the program";
                 int c = JOptionPane.showConfirmDialog(null, p, "Information", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
-                if (c == JOptionPane.OK_OPTION)
-                    System.exit(1);
+                if (c == JOptionPane.OK_OPTION) {
+                    try {
+                        manager.start(50, 50
+                        );
+                    }
+                    catch(Exception ignored) {
+
+                    }
+                }
+
             }
         });
 
@@ -429,9 +436,9 @@ class GameWindow extends JFrame {
         buttonResign.setBounds(152, 180, 100, 25);
         buttonResign.addActionListener(e -> {
             try {
-                //TODO wysyła sygnał poddania aktywnego gracza
-//                manager.start(100, 100);
+                manager.start(50, 50);
                 repaint();
+                //TODO zakoncz gre
             } catch (Exception ignored) {
             }
         });
@@ -517,9 +524,14 @@ class GameWindow extends JFrame {
         setMenuItems(jMenuItem5, jMenu1, "Exit", e -> {
             String p = "Do you want to exit the program";
             int c = JOptionPane.showConfirmDialog(null, p, "Information", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
-
-            if (c == JOptionPane.OK_OPTION)
-                System.exit(1);
+            if (c == JOptionPane.OK_OPTION) {
+                try {
+                    manager.start(50, 50);
+                    repaint();
+                    //TODO zakoncz gre
+                } catch (Exception ignored) {
+                }
+            }
         });
 
         jMenu2.setText("Modify");
@@ -550,6 +562,7 @@ class GameWindow extends JFrame {
 
     void changePhase(boolean toChoosing) {
         if(toChoosing) {
+            System.out.println("changePhase");
             gameStopped = true;
             jTabbedPane1.setEnabledAt(1, true);
             jTabbedPane1.setSelectedIndex(1);

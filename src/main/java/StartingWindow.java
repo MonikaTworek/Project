@@ -124,8 +124,6 @@ public class StartingWindow extends JFrame implements ActionListener {
             setVisible(false);
         }
 
-
-//        client=new ClientAgent(socket);
         if(source == two19) {
             System.out.println("Tworze gre 19x19 dla dwóch graczy");
             try {
