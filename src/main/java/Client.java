@@ -79,6 +79,7 @@ public class Client extends ClientManager {
      * @throws Exception Gdy wystąpi błąd
      */
     public void start(int x, int y) throws Exception {
+        System.out.println(playerColor + " entered start");
         currentColor = boardGraphic.getCurrentPlayer();
         GameWindow.window.changeAgreeState(true);
         if (currentColor == playerColor) {

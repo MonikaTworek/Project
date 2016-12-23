@@ -46,14 +46,6 @@ class ClientManager {
         }
     }
 
-    //TODO to chyba się nie przyda
-    /**
-     * Usuwa planszę
-     */
-    void destroyBoard() {
-        boardGraphic = null;
-    }
-
     /**
      * Tworzy nową planszę
      */

@@ -87,7 +87,6 @@ public class Server extends Thread{
                             clientAgents.get(i).setHasPartner(true);
                             clientAgents.get(first9).setHasPartner(true);
                             flaga9=false;
-                            //TODO:AGATA trzeba wyłączyć okienko startowe
                         }
                     case 19:
 
