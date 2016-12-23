@@ -89,9 +89,9 @@ public class Server extends Thread{
                         }
                         else {
                             gfirst9 = new GameWindow(9);
-                            gfirst9.window.manager = new Client(null, SocketNumber - first9, true);
+                            gfirst9.window.manager = new Client(null, SocketNumber - first9-1, true);
                             gsecond9 = new GameWindow(9);
-                            gsecond9.window.manager = new Client("localhost", SocketNumber - i, false);
+                            gsecond9.window.manager = new Client("localhost", SocketNumber - first9-1, false);
                             clientAgents.get(i).setHasPartner(true);
                             clientAgents.get(first9).setHasPartner(true);
                             flaga9=false;
