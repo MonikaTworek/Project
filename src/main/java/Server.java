@@ -74,7 +74,6 @@ public class Server extends Thread{
         clientAgents.remove(clientAgent);
     }
 
-
     public void toPair() throws IOException {
         boolean flaga19=false;
         boolean flaga9=false;
@@ -88,8 +87,8 @@ public class Server extends Thread{
                     gbot.manager = new Client(null, SocketNumber - i -1, true);
                     gbotbot = new GameWindow(clientAgents.get(i).getDim());
                     gbotbot.setVisible(false);
-                    gbotbot.manager = new Bot("localhost", SocketNumber - i - 1);
-                    //TODO:URUCHOMIENIE BOTA
+                    gbotbot.manager = new Bot("localhost", SocketNumber - i - 1, clientAgents.get(i).getDim());
+                    //TODO: URUCHOMIENIE BOTA
                 }
                 switch (clientAgents.get(i).getDim()){
                     case 9:
@@ -117,7 +116,6 @@ public class Server extends Thread{
                             gfirst19.window.manager = new Client(null, SocketNumber-first19-1, true);
                             gsecond19=new GameWindow(19);
                             gsecond19.window.manager = new Client("localhost", SocketNumber -first19 -1, false);
-
 
                             clientAgents.get(i).setHasPartner(true);
                             clientAgents.get(first19).setHasPartner(true);
