@@ -163,7 +163,7 @@ class Game implements Serializable {
         movesStack = new int[3];
         index = 0;
 
-        // Stwarza początkową czystą planszę konsolową
+//         Stwarza początkową czystą planszę konsolową
 //        consoleMatchPrinter(dim);
     }
 

@@ -188,6 +188,7 @@ class OpenSocketSession extends JFrame {
         }
     }
 
+
     /**
      * Inicjalizuje model poprzez ustawienie domyślnego  IP (localhost) i portu (7777)
      */

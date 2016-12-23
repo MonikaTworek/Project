@@ -42,8 +42,6 @@ class GameWindow extends JFrame {
     static boolean gameStopped;
     private int dimension;
 
-
-
     //TODO:ZARYS SINGLETONA. można poprawić, by było lepiej...
     /*static GameWindow instance;
     public static GameWindow GetInstance(int size){
@@ -53,6 +51,7 @@ class GameWindow extends JFrame {
         }
         return instance;
     }*/
+
     GameWindow(int dim) {
         window = this;
         dimension = dim;
@@ -127,11 +126,8 @@ class GameWindow extends JFrame {
                 }
 
                 public void mouseClicked(MouseEvent e) {}
-
                 public void mouseReleased(MouseEvent e) {}
-
                 public void mouseEntered(MouseEvent e) {}
-
                 public void mouseExited(MouseEvent e) {}
             });
             addMouseMotionListener(new MouseMotionListener() {
@@ -553,6 +549,7 @@ class GameWindow extends JFrame {
 
     void changePhase(boolean toChoosing) {
         if(toChoosing) {
+            System.out.println("changePhase");
             gameStopped = true;
             jTabbedPane1.setEnabledAt(1, true);
             jTabbedPane1.setSelectedIndex(1);

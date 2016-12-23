@@ -12,7 +12,7 @@ import java.util.StringTokenizer;
 
 //TODO częściej repaint (szczególnie dla klasy czekającej na ruch)
 //TODO co jak brak możliwych ruchów dla gracza - auto-pass ??
-public class Client extends ClientManager {
+class Client extends ClientManager {
     /**
      * port serwera
      */
@@ -46,6 +46,8 @@ public class Client extends ClientManager {
         if(firstPlayer) {
             playerColor = PlayerColor.BLACK;
             System.out.print("[GAME] ClientManager started \n");
+            System.out.println("Black player: " + _port);
+            System.out.println("Socket: " + socket);
             Wait wait = new Wait();
             wait.start();
         }
@@ -54,6 +56,8 @@ public class Client extends ClientManager {
             System.out.print("Client two go to game \n");
             socketName = _ip_server;
             playerColor = PlayerColor.WHITE;
+            System.out.println("White player: " + _port);
+            System.out.println("Socket: " + socket);
             try {
                 socket = new Socket(socketName, port);
                 System.out.println("[GAME] ClientManager connect ");
@@ -71,6 +75,9 @@ public class Client extends ClientManager {
         GameWindow.logArea.sendLogText(playerColor + ": Entered the game\n");
     }
 
+    public Client() {
+    }
+
     /**
      * Metoda uruchamiana, gdy użytkownik kliknie w punkt lub spasuje.
      *
@@ -79,12 +86,15 @@ public class Client extends ClientManager {
      * @throws Exception Gdy wystąpi błąd
      */
     public void start(int x, int y) throws Exception {
+        System.out.println("Socket: " + socket);
+        System.out.println(playerColor + " entered start");
         currentColor = boardGraphic.getCurrentPlayer();
         GameWindow.window.changeAgreeState(true);
         if (currentColor == playerColor) {
             if (boardGraphic != null) {
                 String coord = x + "-" + y;
 
+                System.out.println(playerColor + ": " + coord);
                 //clicked pass
                 if(x == 100) {
                     GameWindow.logArea.sendLogText(currentColor + ": Passed\n");
@@ -156,7 +166,6 @@ public class Client extends ClientManager {
                     paintLastMove(x, y);
                 }
                 else {
-                    //TODO wysyłać z Game przyczynę niemożliwości wstawienia kamienia (wyjątki ?)
                     GameWindow.logArea.sendLogText(currentColor + ": Wrong place for stone\n");
                     return;
                 }
@@ -190,20 +199,24 @@ public class Client extends ClientManager {
                     StringTokenizer t = new StringTokenizer(tmp, "-");
                     int x = Integer.parseInt(t.nextToken());
                     int y = Integer.parseInt(t.nextToken());
+                    System.out.println(playerColor + ": " + x + ", " + y);
 
                     if (boardGraphic != null) {
                         //received Pass
                         if (x == 100) {
-                            System.out.println("Received first pass");
-                            GameWindow.logArea.sendLogText(currentColor + ": Passed\n");
-                            boardGraphic.skipMove();
-                            paintLastMove(x, y);
+                            if(y == 1) {
+                                System.out.println("Received first pass");
+                            }
                             if (y == 2) {
                                 System.out.println("Received second pass");
                                 GameWindow.gameStopped = true;
                                 GameWindow.window.changePhase(true);
                             }
+                            GameWindow.logArea.sendLogText(currentColor + ": Passed\n");
+                            boardGraphic.skipMove();
+                            paintLastMove(x, y);
                             GameWindow.window.repaint();
+                            return;
                         }
                         //received to delete
                         else if (x >= 200 && y >= 200) {
@@ -274,5 +287,4 @@ public class Client extends ClientManager {
             catch (Exception ignored) {}
         }
     }
-
 }

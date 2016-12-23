@@ -8,19 +8,23 @@ public class Server extends Thread{
     private ServerSocket serverSocket = null;
     private boolean listen = false;
     private List<ClientAgent> clientAgents = Collections.synchronizedList(new ArrayList<ClientAgent>());
-    private final int SocketNumber = 65333;
+    private final int SocketNumber = 65233;
     private final int time = 1000;
     private final int MaxClient = 1000;
     private GameWindow gfirst9;
     private GameWindow gsecond9;
     private GameWindow gfirst19;
     private GameWindow gsecond19;
+    private GameWindow gbot;
+    private GameWindow gbotbot;
+
+    Socket socket;
 
     Server(){
         super();
         try {
             serverSocket = new ServerSocket(SocketNumber);
-            serverSocket.setSoTimeout(time);
+//            serverSocket.setSoTimeout(time);
         }
         catch (IOException e) {
             System.out.println(e.getMessage());
@@ -37,24 +41,30 @@ public class Server extends Thread{
     }
 
     public void run() {
-        Socket socket;
         while (listen) {
             try {
                 socket = serverSocket.accept();
-                System.out.print(socket);
-                System.out.print("\n");
                 if (socket != null) {
                     if (clientAgents.size() == MaxClient) {
                         (new ObjectOutputStream(socket.getOutputStream())).writeObject(0);
                     } else {
                         ClientAgent clientAgent = new ClientAgent(socket);
+                        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                        String tmp = in.readLine();
+                        StringTokenizer t = new StringTokenizer(tmp, "-");
+                        int dim = Integer.parseInt(t.nextToken());
+                        int withbot = Integer.parseInt(t.nextToken());
+                        clientAgent.setDim(dim);
+                        if (withbot == 1) {
+                            clientAgent.setWithbot(true);
+                        }
                         clientAgents.add(clientAgent);
                         toPair();
                         //TODO: różne serwery na różne rodzaje gier? bo wtedy z automatu mają dim podane, bo tak nie wiem jak przekazać
                     }
                 }
-            }
-            catch (IOException e){
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -64,7 +74,6 @@ public class Server extends Thread{
         clientAgents.remove(clientAgent);
     }
 
-
     public void toPair() throws IOException {
         boolean flaga19=false;
         boolean flaga9=false;
@@ -73,6 +82,14 @@ public class Server extends Thread{
 
         for (int i = 0; i < clientAgents.size(); i++) {
             if (!clientAgents.get(i).getHasPartner()) {
+                if(clientAgents.get(i).getWithBot()){
+                    gbot = new GameWindow(clientAgents.get(i).getDim());
+                    gbot.manager = new Client(null, SocketNumber - i -1, true);
+                    gbotbot = new GameWindow(clientAgents.get(i).getDim());
+                    gbotbot.setVisible(false);
+                    gbotbot.manager = new Bot("localhost", SocketNumber - i - 1, clientAgents.get(i).getDim());
+                    //TODO: URUCHOMIENIE BOTA
+                }
                 switch (clientAgents.get(i).getDim()){
                     case 9:
                         if(!flaga9) {
@@ -81,35 +98,30 @@ public class Server extends Thread{
                         }
                         else {
                             gfirst9 = new GameWindow(9);
-                            gfirst9.window.manager = new Client(null, SocketNumber - first9, true);
+                            gfirst9.window.manager = new Client(null, SocketNumber - first9-1, true);
                             gsecond9 = new GameWindow(9);
-                            gsecond9.window.manager = new Client("localhost", SocketNumber - i, false);
+                            gsecond9.window.manager = new Client("localhost", SocketNumber - first9-1, false);
                             clientAgents.get(i).setHasPartner(true);
                             clientAgents.get(first9).setHasPartner(true);
                             flaga9=false;
-                            //TODO:AGATA trzeba wyłączyć okienko startowe
                         }
+                        break;
                     case 19:
-
                         if(!flaga19) {
                             first19 = i;
                             flaga19=true;
                         }
                         else {
                             gfirst19=new GameWindow(19);
-
                             gfirst19.window.manager = new Client(null, SocketNumber-first19-1, true);
-                            System.out.print(SocketNumber-first19);
-                            System.out.print("\n");
-
                             gsecond19=new GameWindow(19);
                             gsecond19.window.manager = new Client("localhost", SocketNumber -first19 -1, false);
-
 
                             clientAgents.get(i).setHasPartner(true);
                             clientAgents.get(first19).setHasPartner(true);
                             flaga19=false;
                         }
+                        break;
                 }
 
             }
