@@ -16,12 +16,12 @@ class Bot extends ClientManager {
     /**
      * Wskazuje czyja kolej
      */
-    private Basics.PlayerColor currentColor;
+    private PlayerColor currentColor;
 
     /**
      * Kolor gracza
      */
-    private PlayerColor botColor;
+    private PlayerColor botColor = PlayerColor.WHITE;
 
     /**
      * Tworzenie obiektu klienta
@@ -33,14 +33,12 @@ class Bot extends ClientManager {
         /**
          * IP serwera
          */
-        String socketName;
+        String socketName = _ip_server;
         /**
          * port serwera
          */
         port = _port;
         System.out.print("Bot enteres the game \n");
-        socketName = _ip_server;
-        botColor = PlayerColor.WHITE;
         try {
             socket = new Socket(socketName, port);
             System.out.println("[GAME] Bot connect ");
@@ -52,13 +50,6 @@ class Bot extends ClientManager {
         GameWindow.logArea.sendLogText(botColor + ": Entered the game\n");
     }
 
-    /**
-     * Metoda uruchamiana, gdy użytkownik kliknie w punkt lub spasuje.
-     *
-     * @param x współrzędna x
-     * @param y współrzędna y
-     * @throws Exception Gdy wystąpi błąd
-     */
     public void start(int x, int y) throws Exception {
         System.out.println("Bot entered start");
         currentColor = boardGraphic.getCurrentPlayer();
@@ -108,9 +99,9 @@ class Bot extends ClientManager {
         }
     }
 
-/**
- * Oczekuje na ruch przeciwnika
- */
+    /**
+     * Oczekuje na ruch przeciwnika
+     */
     private class WaitMove extends Thread {
         /**
          * Buduje obiekt i uruchamia wątek
@@ -146,7 +137,8 @@ class Bot extends ClientManager {
                         if (x == 100) {
                             System.out.println("Received first pass");
                             boardGraphic.skipMove();
-//                            Bot.start(100, 2);
+                            //TODO:Błąd...
+                            start(100, 2);
                             if (y == 2) {
                                 System.out.println("Received second pass");
                                 GameWindow.gameStopped = true;
@@ -192,8 +184,6 @@ class Bot extends ClientManager {
             } catch (Exception ignored) {
             }
         }
-
-        //public int
     }
 }
 
