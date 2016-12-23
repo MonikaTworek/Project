@@ -42,7 +42,11 @@ class Bot extends Client {
          * port serwera
          */
         port = _port;
+<<<<<<< HEAD
         dim=_dim;
+=======
+        dim = _dim;
+>>>>>>> master
         System.out.print("Bot enteres the game \n");
         try {
             socket = new Socket(socketName, port);
@@ -143,7 +147,12 @@ class Bot extends Client {
                             System.out.println("Received first pass");
                             boardGraphic.skipMove();
                             if (y == 2) {
+<<<<<<< HEAD
                                 move(100, 2);
+=======
+                                System.out.print(x + " + " + y + " \n");
+                                move(x, y);
+>>>>>>> master
                                 System.out.println("Received second pass");
                                 GameWindow.gameStopped = true;
                                 GameWindow.window.changePhase(true);
@@ -158,7 +167,12 @@ class Bot extends Client {
 
                         //received SEND ==> agree
                         else if (x == 20 && y == 20) {
+<<<<<<< HEAD
                             move(20,20);
+=======
+                            move(x, y);
+                            System.out.print(x + " + " + y + " \n");
+>>>>>>> master
                             boardGraphic.updateDeadStoneDecision(1);
                             GameWindow.gameStopped = true;
                             boardGraphic.changeTurn();
@@ -167,24 +181,46 @@ class Bot extends Client {
                         //received AGREE ==> AGREE
                         else if (x == 30) {
                             if (y == 2) {
+<<<<<<< HEAD
                                 move(30,2);
                                 GameWindow.gameStopped = false;
                                 boardGraphic.endGame();
                             }
                             move(30,1);
+=======
+                                System.out.print(x + " + " + y + " \n");
+                                move(x, y);
+                                GameWindow.gameStopped = false;
+                                boardGraphic.endGame();
+                            }
+                            y = 1;
+                            System.out.print(x + " + " + y + " \n");
+                            move(x, y);
+>>>>>>> master
                             boardGraphic.updateDeadStoneDecision(-1);
                             boardGraphic.changeTurn();
                             return;
                         }
                         //received Resume ==> do nothing, just play
                         else if (x == 40 && y == 40) {
+<<<<<<< HEAD
                             move(generator.nextInt(dim), generator.nextInt(dim));
+=======
+                            x = generator.nextInt(dim);
+                            y = generator.nextInt(dim);
+                            System.out.print(x + " + " + y + " \n");
+                            move(x, y);
+>>>>>>> master
                             GameWindow.window.changePhase(false);
                             boardGraphic.returnToMainPhase();
                             boardGraphic.changeTurn();
                             return;
                         }
                         //received normal move
+                        x = generator.nextInt(dim);
+                        y = generator.nextInt(dim);
+                        System.out.print(x + " + " + y + " \n");
+                        move(x, y);
                         Stone p = boardGraphic.updateBoard(currentColor, x, y);
                     } else
                         socket = null;
