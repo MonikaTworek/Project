@@ -60,7 +60,6 @@ public class Server extends Thread{
                         }
                         clientAgents.add(clientAgent);
                         toPair();
-                        //TODO: różne serwery na różne rodzaje gier? bo wtedy z automatu mają dim podane, bo tak nie wiem jak przekazać
                     }
                 }
             } catch (IOException e) {
@@ -86,6 +85,10 @@ public class Server extends Thread{
                     gbot = new GameWindow(clientAgents.get(i).getDim());
                     gbot.manager = new Client(null, SocketNumber - i -1, true);
                     gbotbot = new GameWindow(clientAgents.get(i).getDim());
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> master
                     gbotbot.setVisible(false);
                     gbotbot.manager = new Bot("localhost", SocketNumber - i - 1, clientAgents.get(i).getDim());
                     //TODO: URUCHOMIENIE BOTA
@@ -122,6 +125,48 @@ public class Server extends Thread{
                             flaga19=false;
                         }
                         break;
+<<<<<<< HEAD
+=======
+=======
+                    gbotbot.setVisible(true);
+                    gbotbot.manager = new Bot("localhost", SocketNumber - i - 1, clientAgents.get(i).getDim());
+                    clientAgents.get(i).setHasPartner(true);
+                }
+                else {
+                    switch (clientAgents.get(i).getDim()) {
+                        case 9:
+                            if (!flaga9) {
+                                first9 = i;
+                                flaga9 = true;
+                            } else {
+                                gfirst9 = new GameWindow(9);
+                                gfirst9.window.manager = new Client(null, SocketNumber - first9 - 1, true);
+                                gsecond9 = new GameWindow(9);
+                                gsecond9.window.manager = new Client("localhost", SocketNumber - first9 - 1, false);
+                                clientAgents.get(i).setHasPartner(true);
+                                clientAgents.get(first9).setHasPartner(true);
+                                flaga9 = false;
+                            }
+                            break;
+                        case 19:
+                            if (!flaga19) {
+                                first19 = i;
+                                flaga19 = true;
+                            } else {
+                                gfirst19 = new GameWindow(19);
+                                gfirst19.window.manager = new Client(null, SocketNumber - first19 - 1, true);
+                                gsecond19 = new GameWindow(19);
+                                gsecond19.window.manager = new Client("localhost", SocketNumber - first19 - 1, false);
+
+
+                                clientAgents.get(i).setHasPartner(true);
+                                clientAgents.get(first19).setHasPartner(true);
+                                flaga19 = false;
+                            }
+                            break;
+                    }
+>>>>>>> master
+>>>>>>> master
                 }
 
             }
