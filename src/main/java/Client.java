@@ -90,10 +90,17 @@ class Client extends ClientManager {
         System.out.println(playerColor + " entered start");
         currentColor = boardGraphic.getCurrentPlayer();
         GameWindow.window.changeAgreeState(true);
+        String coord = x + "-" + y;
+        //clicked RESIGN
+        if(x == 50 && y == 50) {
+            if(playerColor == PlayerColor.BLACK)
+                new ThreadForJOptionPane("White");
+            else
+                new ThreadForJOptionPane("Black");
+//             System.exit(0);
+        }
         if (currentColor == playerColor) {
             if (boardGraphic != null) {
-                String coord = x + "-" + y;
-
                 System.out.println(playerColor + ": " + coord);
                 //clicked pass
                 if(x == 100) {
@@ -101,7 +108,6 @@ class Client extends ClientManager {
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                     out_txt.println(coord);
                     if(y == 2) {
-                        GameWindow.gameStopped = true;
                         GameWindow.logArea.sendLogText(currentColor + ": Entered dead stones pointing\n");
                         GameWindow.window.changePhase(true);
                     }
@@ -209,7 +215,6 @@ class Client extends ClientManager {
                             }
                             if (y == 2) {
                                 System.out.println("Received second pass");
-                                GameWindow.gameStopped = true;
                                 GameWindow.window.changePhase(true);
                             }
                             GameWindow.logArea.sendLogText(currentColor + ": Passed\n");
