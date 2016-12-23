@@ -4,6 +4,7 @@ import java.net.Socket;
 public class ClientAgent {
     private int dim;
     private boolean hasPartner = false;
+    private boolean withbot = false;
     final int time = 1000;
 
     public ClientAgent(Socket socket) {
@@ -24,6 +25,12 @@ public class ClientAgent {
     public boolean getHasPartner() {return hasPartner; }
 
     public void setHasPartner(boolean hasPartner){this.hasPartner = hasPartner;}
+
+    public boolean getWithBot(){return withbot;}
+
+    public void setWithbot(boolean withbot){this.withbot=withbot;}
+
+
 
     public void disconnect() {
 //        try {

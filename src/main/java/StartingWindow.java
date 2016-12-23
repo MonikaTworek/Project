@@ -101,9 +101,27 @@ public class StartingWindow extends JFrame implements ActionListener {
 
         if(source == solo19) {
             System.out.println("Tworze gre 19x19 dla jednego gracza");
+            try {
+                out_txt = new PrintWriter(socket.getOutputStream(), true);
+                String jol= "19-1";
+                out_txt.println(jol);
+                socket.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            setVisible(false);
         }
         if(source == solo9) {
             System.out.println("Tworze gre 9x9 dla jednego gracza");
+            try {
+                out_txt = new PrintWriter(socket.getOutputStream(), true);
+                String jol="9-1";
+                out_txt.println(jol);
+                socket.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            setVisible(false);
         }
 
 
@@ -111,8 +129,9 @@ public class StartingWindow extends JFrame implements ActionListener {
         if(source == two19) {
             System.out.println("Tworze gre 19x19 dla dwóch graczy");
             try {
+                String jol="19-0";
                 out_txt = new PrintWriter(socket.getOutputStream(), true);
-                out_txt.println(19);
+                out_txt.println(jol);
                 socket.close();
             } catch (IOException e1) {
                 e1.printStackTrace();
@@ -122,8 +141,9 @@ public class StartingWindow extends JFrame implements ActionListener {
         if(source == two9) {
             System.out.println("Tworze gre 9x9 dla dwóch graczy");
             try {
+                String jol="9-0";
                 out_txt = new PrintWriter(socket.getOutputStream(), true);
-                out_txt.println(9);
+                out_txt.println(jol);
                 socket.close();
             } catch (IOException e1) {
                 e1.printStackTrace();

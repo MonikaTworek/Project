@@ -15,8 +15,8 @@ public class Server extends Thread{
     private GameWindow gsecond9;
     private GameWindow gfirst19;
     private GameWindow gsecond19;
-    private OpenSocketSession open1;
-    private OpenSocketSession open2;
+    private GameWindow gbot;
+
     Socket socket;
 
     Server(){
@@ -54,15 +54,18 @@ public class Server extends Thread{
                         String tmp = in.readLine();
                         StringTokenizer t = new StringTokenizer(tmp, "-");
                         int dim = Integer.parseInt(t.nextToken());
+                        int withbot = Integer.parseInt(t.nextToken());
                         clientAgent.setDim(dim);
+                        if (withbot == 1) {
+                            clientAgent.setWithbot(true);
+                        }
                         clientAgents.add(clientAgent);
-                        //TODO:DIM!!!!!!!!!!!
                         toPair();
                         //TODO: różne serwery na różne rodzaje gier? bo wtedy z automatu mają dim podane, bo tak nie wiem jak przekazać
                     }
                 }
-            }
-            catch (IOException e){
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -81,6 +84,11 @@ public class Server extends Thread{
 
         for (int i = 0; i < clientAgents.size(); i++) {
             if (!clientAgents.get(i).getHasPartner()) {
+                if(clientAgents.get(i).getWithBot()){
+                    gbot = new GameWindow(clientAgents.get(i).getDim());
+                    gbot.manager = new Client(null, SocketNumber - i -1, true);
+                    //TODO:URUCHOMIENIE BOTA
+                }
                 switch (clientAgents.get(i).getDim()){
                     case 9:
                         if(!flaga9) {
