@@ -71,6 +71,9 @@ public class Client extends ClientManager {
         GameWindow.logArea.sendLogText(playerColor + ": Entered the game\n");
     }
 
+    public Client() {
+    }
+
     /**
      * Metoda uruchamiana, gdy użytkownik kliknie w punkt lub spasuje.
      *

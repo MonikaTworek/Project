@@ -92,7 +92,7 @@ public class StartingWindow extends JFrame implements ActionListener {
         Object source = e.getSource();
         PrintWriter out_txt;
         try{
-             socket = new Socket("localhost",65333);
+             socket = new Socket("localhost",65233);
         } catch (UnknownHostException e1) {
             e1.printStackTrace();
         } catch (IOException e1) {

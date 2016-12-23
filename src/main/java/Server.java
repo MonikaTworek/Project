@@ -8,7 +8,7 @@ public class Server extends Thread{
     private ServerSocket serverSocket = null;
     private boolean listen = false;
     private List<ClientAgent> clientAgents = Collections.synchronizedList(new ArrayList<ClientAgent>());
-    private final int SocketNumber = 65333;
+    private final int SocketNumber = 65233;
     private final int time = 1000;
     private final int MaxClient = 1000;
     private GameWindow gfirst9;
@@ -16,6 +16,7 @@ public class Server extends Thread{
     private GameWindow gfirst19;
     private GameWindow gsecond19;
     private GameWindow gbot;
+    private GameWindow gbotbot;
 
     Socket socket;
 
@@ -23,7 +24,7 @@ public class Server extends Thread{
         super();
         try {
             serverSocket = new ServerSocket(SocketNumber);
-            serverSocket.setSoTimeout(time);
+//            serverSocket.setSoTimeout(time);
         }
         catch (IOException e) {
             System.out.println(e.getMessage());
@@ -43,8 +44,6 @@ public class Server extends Thread{
         while (listen) {
             try {
                 socket = serverSocket.accept();
-                System.out.print(socket);
-                System.out.print("\n");
                 if (socket != null) {
                     if (clientAgents.size() == MaxClient) {
                         (new ObjectOutputStream(socket.getOutputStream())).writeObject(0);
@@ -87,6 +86,9 @@ public class Server extends Thread{
                 if(clientAgents.get(i).getWithBot()){
                     gbot = new GameWindow(clientAgents.get(i).getDim());
                     gbot.manager = new Client(null, SocketNumber - i -1, true);
+                    gbotbot = new GameWindow(clientAgents.get(i).getDim());
+                    gbotbot.setVisible(false);
+                    gbotbot.manager = new Bot("localhost", SocketNumber - i - 1);
                     //TODO:URUCHOMIENIE BOTA
                 }
                 switch (clientAgents.get(i).getDim()){

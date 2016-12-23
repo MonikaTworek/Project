@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.StringTokenizer;
 
-class Bot extends ClientManager {
+class Bot extends Client {
     /**
      * port serwera
      */
@@ -30,6 +30,7 @@ class Bot extends ClientManager {
      * @param _port      port przeciwnika
      */
     Bot(String _ip_server, int _port) throws IOException {
+        super();
         /**
          * IP serwera
          */
@@ -147,7 +148,7 @@ class Bot extends ClientManager {
                         //received to delete
                         else if (x >= 200 && y >= 200) {
                             boardGraphic.addToDeadStones(x - 200, y - 200);
-                            new Bot.WaitMove();
+                            new WaitMove();
                             return;
                         }
 
