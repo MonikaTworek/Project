@@ -323,7 +323,7 @@ class GameWindow extends JFrame {
                 String p = "Do you want to exit the program";
                 int c = JOptionPane.showConfirmDialog(null, p, "Information", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
                 if (c == JOptionPane.OK_OPTION)
-                    System.exit(1);
+                    System.exit(0);
             }
         });
 

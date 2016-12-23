@@ -6,9 +6,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Random;
 import java.util.StringTokenizer;
 
 class Bot extends Client {
+    Random generator = new Random();
+    int dim;
     /**
      * port serwera
      */
@@ -29,7 +32,7 @@ class Bot extends Client {
      * @param _ip_server adres IP przeciwnika
      * @param _port      port przeciwnika
      */
-    Bot(String _ip_server, int _port) throws IOException {
+    Bot(String _ip_server, int _port, int _dim) throws IOException {
         super();
         /**
          * IP serwera
@@ -39,6 +42,7 @@ class Bot extends Client {
          * port serwera
          */
         port = _port;
+        dim = _dim;
         System.out.print("Bot enteres the game \n");
         try {
             socket = new Socket(socketName, port);
@@ -138,8 +142,9 @@ class Bot extends Client {
                         if (x == 100) {
                             System.out.println("Received first pass");
                             boardGraphic.skipMove();
-                            move(100, 2);
                             if (y == 2) {
+                                System.out.print(x + " + " + y + " \n");
+                                move(x, y);
                                 System.out.println("Received second pass");
                                 GameWindow.gameStopped = true;
                                 GameWindow.window.changePhase(true);
@@ -154,6 +159,8 @@ class Bot extends Client {
 
                         //received SEND ==> agree
                         else if (x == 20 && y == 20) {
+                            move(x, y);
+                            System.out.print(x + " + " + y + " \n");
                             boardGraphic.updateDeadStoneDecision(1);
                             GameWindow.gameStopped = true;
                             boardGraphic.changeTurn();
@@ -162,21 +169,34 @@ class Bot extends Client {
                         //received AGREE ==> AGREE
                         else if (x == 30) {
                             if (y == 2) {
+                                System.out.print(x + " + " + y + " \n");
+                                move(x, y);
                                 GameWindow.gameStopped = false;
                                 boardGraphic.endGame();
                             }
+                            y = 1;
+                            System.out.print(x + " + " + y + " \n");
+                            move(x, y);
                             boardGraphic.updateDeadStoneDecision(-1);
                             boardGraphic.changeTurn();
                             return;
                         }
                         //received Resume ==> do nothing, just play
                         else if (x == 40 && y == 40) {
+                            x = generator.nextInt(dim);
+                            y = generator.nextInt(dim);
+                            System.out.print(x + " + " + y + " \n");
+                            move(x, y);
                             GameWindow.window.changePhase(false);
                             boardGraphic.returnToMainPhase();
                             boardGraphic.changeTurn();
                             return;
                         }
                         //received normal move
+                        x = generator.nextInt(dim);
+                        y = generator.nextInt(dim);
+                        System.out.print(x + " + " + y + " \n");
+                        move(x, y);
                         Stone p = boardGraphic.updateBoard(currentColor, x, y);
                     } else
                         socket = null;
