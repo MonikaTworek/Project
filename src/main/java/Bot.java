@@ -43,14 +43,14 @@ class Bot extends ClientManager {
             socket = new Socket(socketName, port);
             System.out.println("[GAME] Bot connect ");
 
-            new Bot.WaitMove();
+            new WaitMove();
         } catch (Exception e) {
             System.out.println("-->  Error in the network connection.");
         }
         GameWindow.logArea.sendLogText(botColor + ": Entered the game\n");
     }
 
-    public void start(int x, int y) throws Exception {
+    public void move(int x, int y) throws Exception {
         System.out.println("Bot entered start");
         currentColor = boardGraphic.getCurrentPlayer();
         if (currentColor == botColor) {
@@ -137,8 +137,7 @@ class Bot extends ClientManager {
                         if (x == 100) {
                             System.out.println("Received first pass");
                             boardGraphic.skipMove();
-                            //TODO:Błąd...
-                            start(100, 2);
+                            move(100, 2);
                             if (y == 2) {
                                 System.out.println("Received second pass");
                                 GameWindow.gameStopped = true;
