@@ -7,20 +7,10 @@ import java.net.*;
 import java.util.Random;
 import java.util.StringTokenizer;
 
-<<<<<<< HEAD
-class Client extends ClientManager {
-=======
-<<<<<<< HEAD
-class Client extends ClientManager {
-=======
+
 //TODO częściej repaint (szczególnie dla klasy czekającej na ruch)
 //TODO co jak brak możliwych ruchów dla gracza - auto-pass ??
 class Client extends ClientManager {
-    /**
-     * port serwera
-     */
->>>>>>> master
->>>>>>> master
     private int port;
     private PlayerColor currentColor;
     PlayerColor playerColor;
@@ -41,13 +31,7 @@ class Client extends ClientManager {
             playerColor = PlayerColor.BLACK;
             System.out.print("[GAME] ClientManager started \n");
             System.out.println("Black player: " + _port);
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
             System.out.println("Socket: " + socket);
->>>>>>> master
->>>>>>> master
             Wait wait = new Wait();
             wait.start();
         }

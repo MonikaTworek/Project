@@ -330,7 +330,7 @@ class GameWindow extends JFrame {
 
                     }
                 }
-
+                window.dispose();
             }
         });
 
@@ -438,7 +438,7 @@ class GameWindow extends JFrame {
             try {
                 manager.start(50, 50);
                 repaint();
-                //TODO zakoncz gre
+                window.dispose();
             } catch (Exception ignored) {
             }
         });
@@ -528,7 +528,7 @@ class GameWindow extends JFrame {
                 try {
                     manager.start(50, 50);
                     repaint();
-                    //TODO zakoncz gre
+                    window.dispose();
                 } catch (Exception ignored) {
                 }
             }
