@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 //TODO częściej repaint (szczególnie dla klasy czekającej na ruch)
 //TODO co jak brak możliwych ruchów dla gracza - auto-pass ??
 class Client extends ClientManager {
+    public boolean yesYouCan=false;
     private int port;
     PlayerColor currentColor;
     PlayerColor playerColor;
@@ -120,7 +121,6 @@ class Client extends ClientManager {
 
                 }
                 //clicked normal move
-                System.out.println("ciota");
                 Stone p = boardGraphic.updateBoard(currentColor, x, y);
                 if (p != null) {
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
@@ -128,12 +128,14 @@ class Client extends ClientManager {
                 }
 
             } else {
-                System.out.println("Zly ruch");
                 move(100,1);
             }
             boardGraphic.changeTurn();
             new BotWaitMove();
         }
+    }
+    public void yesYou(){
+        yesYouCan=true;
     }
 
     private class BotWaitMove extends Thread {
@@ -160,6 +162,10 @@ class Client extends ClientManager {
             try {
                 System.out.println("[Bot] I'm waiting here...");
                 do {
+
+                    if(yesYouCan){
+                        break;
+                    }
                     currentColor = boardGraphic.getCurrentPlayer();
                 } while (currentColor == playerColor);
                 System.out.println("[Bot] Oh look! Its my turn now!");
@@ -170,8 +176,11 @@ class Client extends ClientManager {
                     int x = Integer.parseInt(t.nextToken());
                     int y = Integer.parseInt(t.nextToken());
                     System.out.println("[Bot] " + playerColor + ": " + x + ", " + y);
-
-                    if (boardGraphic != null) {
+                    if(yesYouCan){
+                        move(100,1);
+                        yesYouCan=false;
+                    }
+                    else if (boardGraphic != null) {
                         //received Pass ==> PASS
                         if (x == 100) {
                             if(y==1) {
@@ -233,8 +242,16 @@ class Client extends ClientManager {
 
                         x=generator.nextInt(dim);
                         y=generator.nextInt(dim);
-                        System.out.print("[Bot] i'll move to: " + x + " : " + y);
+                        System.out.println("[Bot] i'll move to: " + x + " : " + y);
+                        boolean check =boardGraphic.positionIsFree(x,y);
+                        if (!check){
+                            System.out.println("CHECK");
+//                            yesYou();
+                            move(100,1);
+                        }
                         move(x,y);
+                        //TODO:co jak kamien juz jest
+
                         gameWindow.window.changePhase(false);
                         boardGraphic.returnToMainPhase();
                         boardGraphic.changeTurn();

@@ -350,7 +350,7 @@ class Game implements Serializable {
      * @param y współrzędna Y planszy
      * @return true, jeżeli pole jest wolne, false - w przeciwynm wypadku
      */
-    private boolean positionIsFree(int x, int y) {
+    public boolean positionIsFree(int x, int y) {
         return (board[x][y] == null);
     }
 
