@@ -12,11 +12,11 @@ import java.util.StringTokenizer;
 //TODO co jak brak możliwych ruchów dla gracza - auto-pass ??
 class Client extends ClientManager {
     private int port;
-    private PlayerColor currentColor;
+    PlayerColor currentColor;
     PlayerColor playerColor;
-    String socketName;
-    int dim;
-    Random generator = new Random();
+    private String socketName;
+    private int dim;
+    private Random generator = new Random();
 
     /**
      * Tworzenie obiektu klienta
@@ -24,7 +24,8 @@ class Client extends ClientManager {
      * @param _ip_server adres IP przeciwnika
      * @param _port port przeciwnika
      */
-    Client(String _ip_server, int _port, boolean firstPlayer) throws IOException {
+    Client(String _ip_server, int _port, boolean firstPlayer, GameWindow gameWindow) throws IOException {
+        super(gameWindow);
         port = _port;
 
         if(firstPlayer) {
@@ -45,7 +46,7 @@ class Client extends ClientManager {
             try {
                 socket = new Socket(socketName, port);
                 System.out.println("[GAME] ClientManager connect ");
-                GameWindow.window.jTextPane1.setCaretPosition(GameWindow.window.jTextPane1.getDocument().getLength());
+                gameWindow.jTextPane1.setCaretPosition(gameWindow.jTextPane1.getDocument().getLength());
 
                 String a = "The game is began";
                 String b = "Game started";
@@ -56,10 +57,11 @@ class Client extends ClientManager {
             }
 
         }
-        GameWindow.logArea.sendLogText(playerColor + ": Entered the game\n");
+        gameWindow.logArea.sendLogText(playerColor + ": Entered the game\n");
     }
 
-    public Client(int port, int dim) {
+    Client(int port, int dim, GameWindow gameWindow) {
+        super(gameWindow);
         this.port=port;
         socketName="localhost";
         this.dim=dim;
@@ -73,8 +75,15 @@ class Client extends ClientManager {
         } catch (Exception e) {
             System.out.println("-->  Error in the network connection.");
         }
-        GameWindow.logArea.sendLogText(playerColor + ": Entered the game\n");
+        gameWindow.logArea.sendLogText(playerColor + ": Entered the game\n");
     }
+
+    /**
+     * wykonuje ruchy dla bota
+     * @param x
+     * @param y
+     * @throws Exception
+     */
     public void move(int x, int y) throws Exception {
         System.out.println("Bot entered start");
         currentColor = boardGraphic.getCurrentPlayer();
@@ -88,8 +97,8 @@ class Client extends ClientManager {
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                     out_txt.println(coord);
                     if (y == 2) {
-                        GameWindow.gameStopped = true;
-                        GameWindow.window.changePhase(true);
+                        gameWindow.gameStopped = true;
+                        gameWindow.window.changePhase(true);
                     }
                     boardGraphic.skipMove();
                     new BotWaitMove();
@@ -103,7 +112,7 @@ class Client extends ClientManager {
                     boardGraphic.updateDeadStoneDecision(-1);
                     boardGraphic.changeTurn();
                     if (y == 2) {
-                        GameWindow.gameStopped = false;
+                        gameWindow.gameStopped = false;
                         boardGraphic.endGame();
                     }
                     new BotWaitMove();
@@ -111,18 +120,19 @@ class Client extends ClientManager {
 
                 }
                 //clicked normal move
+                System.out.println("ciota");
                 Stone p = boardGraphic.updateBoard(currentColor, x, y);
                 if (p != null) {
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                     out_txt.println(coord);
-                } else {
-                    return;
                 }
-            } else
+            } else {
                 socket = null;
+            }
             new BotWaitMove();
         }
     }
+
     private class BotWaitMove extends Thread {
         /**
          * Buduje obiekt i uruchamia wątek
@@ -145,24 +155,32 @@ class Client extends ClientManager {
              * otrzymanie 2 agree = agree
              */
             try {
-                currentColor = boardGraphic.getCurrentPlayer();
+                System.out.println("[Bot] I'm waiting here...");
+                do {
+                    currentColor = boardGraphic.getCurrentPlayer();
+                } while (currentColor == playerColor);
+                System.out.println("[Bot] Oh look! Its my turn now!");
                 if (playerColor != currentColor) {
                     BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     String tmp = in.readLine();
                     StringTokenizer t = new StringTokenizer(tmp, "-");
                     int x = Integer.parseInt(t.nextToken());
                     int y = Integer.parseInt(t.nextToken());
+                    System.out.println("[Bot] " + playerColor + ": " + x + ", " + y);
 
                     if (boardGraphic != null) {
                         //received Pass ==> PASS
                         if (x == 100) {
-                            System.out.println("Received first pass");
-                            boardGraphic.skipMove();
-                            if (y == 2) {
+                            if(y==1) {
+                                System.out.println("Received first pass");
+                                boardGraphic.skipMove();
                                 move(100, 2);
+                            }
+                            if (y == 2) {
                                 System.out.println("Received second pass");
-                                GameWindow.gameStopped = true;
-                                GameWindow.window.changePhase(true);
+                                gameWindow.gameStopped = true;
+                                gameWindow.window.changePhase(true);
+                               move(20,20);
                             }
                         }
                         //received to delete
@@ -174,39 +192,56 @@ class Client extends ClientManager {
 
                         //received SEND ==> agree
                         else if (x == 20 && y == 20) {
-                            move(20,20);
                             boardGraphic.updateDeadStoneDecision(1);
-                            GameWindow.gameStopped = true;
+                            gameWindow.gameStopped = true;
                             boardGraphic.changeTurn();
+                            move(20,20);
                             return;
                         }
                         //received AGREE ==> AGREE
                         else if (x == 30) {
                             if (y == 2) {
-                                move(30,2);
-                                GameWindow.gameStopped = false;
+                                gameWindow.gameStopped = false;
                                 boardGraphic.endGame();
+                                move(30,2);
                             }
-                            move(30,1);
                             boardGraphic.updateDeadStoneDecision(-1);
                             boardGraphic.changeTurn();
+                            move(30,1);
                             return;
                         }
                         //received Resume ==> do nothing, just play
                         else if (x == 40 && y == 40) {
-                            move(generator.nextInt(dim), generator.nextInt(dim));
-                            GameWindow.window.changePhase(false);
+                            x=generator.nextInt(dim);
+                            y=generator.nextInt(dim);
+                            System.out.print(x+ " + "+y);
+                            move(x,y);
+                            gameWindow.window.changePhase(false);
                             boardGraphic.returnToMainPhase();
                             boardGraphic.changeTurn();
                             return;
                         }
                         //received normal move
                         Stone p = boardGraphic.updateBoard(currentColor, x, y);
+                        if (p != null) {
+                            paintLastMove(x, y);
+                        }
+
+
+                        x=generator.nextInt(dim);
+                        y=generator.nextInt(dim);
+                        System.out.print("[Bot] i'll move to: " + x + " : " + y);
+                        move(x,y);
+                        gameWindow.window.changePhase(false);
+                        boardGraphic.returnToMainPhase();
+                        boardGraphic.changeTurn();
                     } else
                         socket = null;
                 }
             } catch (Exception ignored) {
+                System.out.println("[Bot] I'm done...");
             }
+            System.out.println("[Bot] I did my duty, bye!");
         }
     }
 
@@ -218,10 +253,9 @@ class Client extends ClientManager {
      * @throws Exception Gdy wystąpi błąd
      */
     public void start(int x, int y) throws Exception {
-        System.out.println("Socket: " + socket);
         System.out.println(playerColor + " entered start");
         currentColor = boardGraphic.getCurrentPlayer();
-        GameWindow.window.changeAgreeState(true);
+        gameWindow.window.changeAgreeState(true);
         String coord = x + "-" + y;
         //clicked RESIGN
         if(x == 50 && y == 50) {
@@ -236,12 +270,12 @@ class Client extends ClientManager {
                 System.out.println(playerColor + ": " + coord);
                 //clicked pass
                 if(x == 100) {
-                    GameWindow.logArea.sendLogText(currentColor + ": Passed\n");
+                    gameWindow.logArea.sendLogText(currentColor + ": Passed\n");
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                     out_txt.println(coord);
                     if(y == 2) {
-                        GameWindow.logArea.sendLogText(currentColor + ": Entered dead stones pointing\n");
-                        GameWindow.window.changePhase(true);
+                        gameWindow.logArea.sendLogText(currentColor + ": Entered dead stones pointing\n");
+                        gameWindow.window.changePhase(true);
                     }
                     boardGraphic.skipMove();
                     paintLastMove(x, y);
@@ -253,12 +287,12 @@ class Client extends ClientManager {
                 else if(x >= 200 && y >= 200) {
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                     out_txt.println(coord);
-                    GameWindow.window.changeAgreeState(false);
+                    gameWindow.window.changeAgreeState(false);
                     return;
                 }
                 //clicked SEND
                 else if (x == 20 && y == 20) {
-                    GameWindow.logArea.sendLogText(currentColor + ": Sent dead stones\n");
+                    gameWindow.logArea.sendLogText(currentColor + ": Sent dead stones\n");
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                     out_txt.println(coord);
                     boardGraphic.updateDeadStoneDecision(1);
@@ -268,14 +302,14 @@ class Client extends ClientManager {
                 }
                 //clicked AGREE
                 else if (x == 30) {
-                    GameWindow.logArea.sendLogText(currentColor + ": Agreed with dead stones\n");
+                    gameWindow.logArea.sendLogText(currentColor + ": Agreed with dead stones\n");
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                     out_txt.println(coord);
                     boardGraphic.updateDeadStoneDecision(-1);
                     boardGraphic.changeTurn();
                     if(y == 2) {
-                        GameWindow.logArea.sendLogText(currentColor + ": Game over\n");
-                        GameWindow.gameStopped = false;
+                        gameWindow.logArea.sendLogText(currentColor + ": Game over\n");
+                        gameWindow.gameStopped = false;
                         boardGraphic.endGame();
                         paintLastMove(x, y);
                     }
@@ -285,10 +319,10 @@ class Client extends ClientManager {
                 }
                 //clicked RESUME
                 else if(x == 40 && y == 40) {
-                    GameWindow.logArea.sendLogText(currentColor + ": Resuming the game\n");
+                    gameWindow.logArea.sendLogText(currentColor + ": Resuming the game\n");
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                     out_txt.println(coord);
-                    GameWindow.window.changePhase(false);
+                    gameWindow.window.changePhase(false);
                     boardGraphic.returnToMainPhase();
                     boardGraphic.changeTurn();
                     new WaitMove();
@@ -300,11 +334,11 @@ class Client extends ClientManager {
                 if (p != null) {
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                     out_txt.println(coord);
-                    GameWindow.logArea.sendLogText(currentColor + ": Placed the stone at " + x + ", " + y + "\n");
+                    gameWindow.logArea.sendLogText(currentColor + ": Placed the stone at " + x + ", " + y + "\n");
                     paintLastMove(x, y);
                 }
                 else {
-                    GameWindow.logArea.sendLogText(currentColor + ": Wrong place for stone\n");
+                    gameWindow.logArea.sendLogText(currentColor + ": Wrong place for stone\n");
                     return;
                 }
             }
@@ -321,9 +355,7 @@ class Client extends ClientManager {
         /**
          * Buduje obiekt i uruchamia wątek
          */
-        WaitMove() {
-            start();
-        }
+        WaitMove() {start();}
 
         /**
          * Wątek czeka na ruch
@@ -347,12 +379,12 @@ class Client extends ClientManager {
                             }
                             if (y == 2) {
                                 System.out.println("Received second pass");
-                                GameWindow.window.changePhase(true);
+                                gameWindow.window.changePhase(true);
                             }
-                            GameWindow.logArea.sendLogText(currentColor + ": Passed\n");
+                            gameWindow.logArea.sendLogText(currentColor + ": Passed\n");
                             boardGraphic.skipMove();
                             paintLastMove(x, y);
-                            GameWindow.window.repaint();
+                            gameWindow.window.repaint();
                             return;
                         }
                         //received to delete
@@ -364,21 +396,21 @@ class Client extends ClientManager {
 
                         //received SEND
                         else if (x == 20 && y == 20) {
-                            GameWindow.logArea.sendLogText(currentColor + ": Sent dead stones\n");
+                            gameWindow.logArea.sendLogText(currentColor + ": Sent dead stones\n");
                             boardGraphic.updateDeadStoneDecision(1);
-                            GameWindow.gameStopped = true;
+                            gameWindow.gameStopped = true;
                             boardGraphic.changeTurn();
-                            GameWindow.window.repaint();
+                            gameWindow.window.repaint();
                             return;
                         }
                         //received AGREE
                         else if (x == 30) {
-                            GameWindow.logArea.sendLogText(currentColor + ": Agreed with dead stones\n");
+                            gameWindow.logArea.sendLogText(currentColor + ": Agreed with dead stones\n");
                             if(y == 2) {
-                                GameWindow.logArea.sendLogText(currentColor + ": Game over\n");
-                                GameWindow.gameStopped = false;
+                                gameWindow.logArea.sendLogText(currentColor + ": Game over\n");
+                                gameWindow.gameStopped = false;
                                 boardGraphic.endGame();
-                                GameWindow.window.repaint();
+                                gameWindow.window.repaint();
                                 paintLastMove(x, y);
                             }
                             boardGraphic.updateDeadStoneDecision(-1);
@@ -387,17 +419,18 @@ class Client extends ClientManager {
                         }
                         //received Resume
                         else if(x == 40 && y == 40) {
-                            GameWindow.logArea.sendLogText(currentColor + ": Resuming the game\n");
-                            GameWindow.window.changePhase(false);
+                            gameWindow.logArea.sendLogText(currentColor + ": Resuming the game\n");
+                            gameWindow.window.changePhase(false);
                             boardGraphic.returnToMainPhase();
                             boardGraphic.changeTurn();
-                            GameWindow.window.repaint();
+                            gameWindow.window.repaint();
                             return;
                         }
                         //received normal move
+                        System.out.println("[User] I'm placing the rock!");
                         Stone p = boardGraphic.updateBoard(currentColor, x, y);
                         if (p != null) {
-                            GameWindow.logArea.sendLogText(currentColor + ": Placed the stone at " + x + ", " + y + "\n");
+                            gameWindow.logArea.sendLogText(currentColor + ": Placed the stone at " + x + ", " + y + "\n");
                             paintLastMove(x, y);
                         }
                     } else
@@ -416,7 +449,7 @@ class Client extends ClientManager {
             try {
                 s = new ServerSocket(port);
                 socket = s.accept();
-                GameWindow.window.jTextPane1.setCaretPosition(GameWindow.window.jTextPane1.getDocument().getLength());
+                gameWindow.window.jTextPane1.setCaretPosition(gameWindow.window.jTextPane1.getDocument().getLength());
                 String a = "The game is began. Black starts";
                 String b = "Game started";
                 JOptionPane.showMessageDialog(null, a, b, JOptionPane.INFORMATION_MESSAGE);

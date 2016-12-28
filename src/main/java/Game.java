@@ -459,7 +459,7 @@ class Game implements Serializable {
         //przypadek dla "North" i "West"
         if(direction.equals(Direction.NORTH) || direction.equals(Direction.WEST))
             return (n > 0);
-        //przypadek dla "South" i "East"
+            //przypadek dla "South" i "East"
         else
             return (n < dim-1);
     }

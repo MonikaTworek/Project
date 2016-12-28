@@ -6,7 +6,10 @@ import javax.swing.*;
  *
  */
 class ClientManager {
-    ClientManager() {
+    public GameWindow gameWindow;
+
+    ClientManager(GameWindow gameWindow) {
+        this.gameWindow = gameWindow;
         makeBoard();
     }
     Game boardGraphic;
@@ -40,9 +43,9 @@ class ClientManager {
                 new ThreadForJOptionPane("White");
         }
         else {
-            GameWindow.jPanel2.lastX = y*25 + 20;
-            GameWindow.jPanel2.lastY = x*25 + 24;
-            GameWindow.jPanel2.repaint();
+            gameWindow.jPanel2.lastX = y*25 + 20;
+            gameWindow.jPanel2.lastY = x*25 + 24;
+            gameWindow.jPanel2.repaint();
         }
     }
 

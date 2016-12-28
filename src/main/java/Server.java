@@ -9,7 +9,6 @@ public class Server extends Thread{
     private boolean listen = false;
     private List<ClientAgent> clientAgents = Collections.synchronizedList(new ArrayList<ClientAgent>());
     private final int SocketNumber = 65233;
-    private final int time = 1000;
     private final int MaxClient = 1000;
     private GameWindow gfirst9;
     private GameWindow gsecond9;
@@ -83,12 +82,12 @@ public class Server extends Thread{
             if (!clientAgents.get(i).getHasPartner()) {
                 if(clientAgents.get(i).getWithBot()){
                     gbot = new GameWindow(clientAgents.get(i).getDim());
-                    gbot.manager = new Client(null, SocketNumber - i -1, true);
+                    gbot.manager = new Client(null, SocketNumber - i -1, true, gbot);
                     gbotbot = new GameWindow(clientAgents.get(i).getDim());
                     gbotbot.setVisible(true);
-                    gbotbot.manager = new Client( SocketNumber - i - 1, clientAgents.get(i).getDim());
+                    gbotbot.manager = new Client( SocketNumber - i - 1, clientAgents.get(i).getDim(), gbotbot);
                     clientAgents.get(i).setHasPartner(true);
-                    //TODO: URUCHOMIENIE BOTA
+                    continue;
                 }
                 switch (clientAgents.get(i).getDim()){
                     case 9:
@@ -98,9 +97,9 @@ public class Server extends Thread{
                         }
                         else {
                             gfirst9 = new GameWindow(9);
-                            gfirst9.window.manager = new Client(null, SocketNumber - first9-1, true);
+                            gfirst9.window.manager = new Client(null, SocketNumber - first9-1, true, gfirst9);
                             gsecond9 = new GameWindow(9);
-                            gsecond9.window.manager = new Client("localhost", SocketNumber - first9-1, false);
+                            gsecond9.window.manager = new Client("localhost", SocketNumber - first9-1, false, gsecond9);
                             clientAgents.get(i).setHasPartner(true);
                             clientAgents.get(first9).setHasPartner(true);
                             flaga9=false;
@@ -113,9 +112,9 @@ public class Server extends Thread{
                         }
                         else {
                             gfirst19=new GameWindow(19);
-                            gfirst19.window.manager = new Client(null, SocketNumber-first19-1, true);
+                            gfirst19.window.manager = new Client(null, SocketNumber-first19-1, true, gfirst19);
                             gsecond19=new GameWindow(19);
-                            gsecond19.window.manager = new Client("localhost", SocketNumber -first19 -1, false);
+                            gsecond19.window.manager = new Client("localhost", SocketNumber -first19 -1, false,gsecond19);
 
                             clientAgents.get(i).setHasPartner(true);
                             clientAgents.get(first19).setHasPartner(true);

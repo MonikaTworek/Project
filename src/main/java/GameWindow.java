@@ -17,7 +17,7 @@ import javax.imageio.*;
 //TODO okno(gra) jako obiekt posiadający stany (wzorzec). Send i inne przyciski powodują przejścia pomiędzy stanami
 class GameWindow extends JFrame {
     private JCheckBoxMenuItem jCheckBoxMenuItem1;
-    static MainPanel jPanel2;
+    public MainPanel jPanel2;
     JTextPane jTextPane1;
     private JLabel jLabel16;
     private static JTabbedPane jTabbedPane1;
@@ -33,13 +33,13 @@ class GameWindow extends JFrame {
     private JTextField jTextField10;
     private JTextField jTextField11;
     private JTextField jTextField12;
-    static Log logArea;
+    public Log logArea;
     private JButton buttonAgree;
     private JButton buttonPass;
 
-    static GameWindow window;
+    public GameWindow window;
     Client manager;
-    static boolean gameStopped;
+    public boolean gameStopped;
     private int dimension;
 
     //TODO:ZARYS SINGLETONA. można poprawić, by było lepiej...
@@ -51,7 +51,6 @@ class GameWindow extends JFrame {
         }
         return instance;
     }*/
-
     GameWindow(int dim) {
         window = this;
         dimension = dim;
@@ -321,16 +320,8 @@ class GameWindow extends JFrame {
             public void windowClosing(WindowEvent e) {
                 String p = "Do you want to exit the program";
                 int c = JOptionPane.showConfirmDialog(null, p, "Information", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
-                if (c == JOptionPane.OK_OPTION) {
-                    try {
-                        manager.start(50, 50
-                        );
-                    }
-                    catch(Exception ignored) {
-
-                    }
-                }
-                window.dispose();
+                if (c == JOptionPane.OK_OPTION)
+                    System.exit(1);
             }
         });
 
@@ -436,9 +427,9 @@ class GameWindow extends JFrame {
         buttonResign.setBounds(152, 180, 100, 25);
         buttonResign.addActionListener(e -> {
             try {
-                manager.start(50, 50);
+                //TODO wysyła sygnał poddania aktywnego gracza
+//                manager.start(100, 100);
                 repaint();
-                window.dispose();
             } catch (Exception ignored) {
             }
         });
@@ -515,7 +506,7 @@ class GameWindow extends JFrame {
         jMenu1.setFont(new Font("Dialog", 0, 12));
 
         jMenu1.add(jSeparator1);
-        setMenuItems(jMenuItem3, jMenu1, "New client/server", e -> new OpenSocketSession());
+        //setMenuItems(jMenuItem3, jMenu1, "New client/server", e -> new OpenSocketSession());
         setMenuItems(jMenuItem4, jMenu1, "Close connection", e -> {
             check();
             repaint();
@@ -524,14 +515,9 @@ class GameWindow extends JFrame {
         setMenuItems(jMenuItem5, jMenu1, "Exit", e -> {
             String p = "Do you want to exit the program";
             int c = JOptionPane.showConfirmDialog(null, p, "Information", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
-            if (c == JOptionPane.OK_OPTION) {
-                try {
-                    manager.start(50, 50);
-                    repaint();
-                    window.dispose();
-                } catch (Exception ignored) {
-                }
-            }
+
+            if (c == JOptionPane.OK_OPTION)
+                System.exit(1);
         });
 
         jMenu2.setText("Modify");
@@ -562,7 +548,6 @@ class GameWindow extends JFrame {
 
     void changePhase(boolean toChoosing) {
         if(toChoosing) {
-            System.out.println("changePhase");
             gameStopped = true;
             jTabbedPane1.setEnabledAt(1, true);
             jTabbedPane1.setSelectedIndex(1);
@@ -650,7 +635,7 @@ class GameWindow extends JFrame {
         StyleConstants.setBold(blue, true);
     }
 
-    private static void check() {
+    private void check() {
         try {
             if (window.manager != null) {
                 if (window.manager.s != null)
