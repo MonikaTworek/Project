@@ -126,9 +126,12 @@ class Client extends ClientManager {
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                     out_txt.println(coord);
                 }
+
             } else {
-                socket = null;
+                System.out.println("Zly ruch");
+                move(100,1);
             }
+            boardGraphic.changeTurn();
             new BotWaitMove();
         }
     }
