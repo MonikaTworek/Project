@@ -13,14 +13,13 @@ import javax.imageio.*;
 
 //TODO window może być singletonem!
 //TODO automatyczne przełączanie pomiędzy zakładkami podczas przejścia z fazy głównej do wybierania i odwrotnie
-//TODO wyświetlać zwycięzcę w drugiej zakładce
 //TODO okno(gra) jako obiekt posiadający stany (wzorzec). Send i inne przyciski powodują przejścia pomiędzy stanami
 class GameWindow extends JFrame {
     private JCheckBoxMenuItem jCheckBoxMenuItem1;
     public MainPanel jPanel2;
     JTextPane jTextPane1;
     private JLabel jLabel16;
-    private static JTabbedPane jTabbedPane1;
+    public static JTabbedPane jTabbedPane1;
     private JTextField jTextField1;
     private JTextField jTextField2;
     private JTextField jTextField3;
@@ -35,6 +34,8 @@ class GameWindow extends JFrame {
     private JTextField jTextField12;
     public Log logArea;
     private JButton buttonAgree;
+    private JButton buttonSend;
+    private JButton buttonResume;
     private JButton buttonPass;
 
     public GameWindow window;
@@ -299,29 +300,29 @@ class GameWindow extends JFrame {
 
         buttonPass = new JButton();
         JButton buttonResign = new JButton();
-        JButton buttonResume = new JButton();
+        buttonResume = new JButton();
         buttonAgree = new JButton();
-        JButton buttonSend = new JButton();
+        buttonSend = new JButton();
+        buttonResume = new JButton();
 
-        JSeparator jSeparator1 = new JSeparator();
-        JSeparator jSeparator2 = new JSeparator();
         JSeparator jSeparator3 = new JSeparator();
         JMenuBar jMenuBar1 = new JMenuBar();
         JMenu jMenu1 = new JMenu();
         JMenu jMenu2 = new JMenu();
         JMenu jMenu3 = new JMenu();
         jCheckBoxMenuItem1 = new JCheckBoxMenuItem();
-        JMenuItem jMenuItem3 = new JMenuItem();
-        JMenuItem jMenuItem4 = new JMenuItem();
         JMenuItem jMenuItem5 = new JMenuItem();
 
-        //TODO Resign = zamknięciu okna
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 String p = "Do you want to exit the program";
                 int c = JOptionPane.showConfirmDialog(null, p, "Information", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
-                if (c == JOptionPane.OK_OPTION)
-                    System.exit(1);
+                if (c == JOptionPane.OK_OPTION) {
+                    if(manager.playerColor == PlayerColor.BLACK)
+                        new ThreadForJOptionPane("Black", window);
+                    else
+                        new ThreadForJOptionPane("White", window);
+                }
             }
         });
 
@@ -480,7 +481,10 @@ class GameWindow extends JFrame {
             }
         });
 
-        jTabbedPane1.setEnabledAt(1, false);
+//        jTabbedPane1.setEnabledAt(1, false);
+        buttonAgree.setEnabled(false);
+        buttonSend.setEnabled(false);
+        buttonResume.setEnabled(false);
 
         setStatistics(jLabel2, 10, "Territory for black", jLayeredPane2);
         setStatistics(jLabel3, 30, "Territory for white", jLayeredPane2);
@@ -505,20 +509,14 @@ class GameWindow extends JFrame {
         jMenu1.setText("File");
         jMenu1.setFont(new Font("Dialog", 0, 12));
 
-        jMenu1.add(jSeparator1);
-        //setMenuItems(jMenuItem3, jMenu1, "New client/server", e -> new OpenSocketSession());
-        setMenuItems(jMenuItem4, jMenu1, "Close connection", e -> {
-            check();
-            repaint();
-        });
-        jMenu1.add(jSeparator2);
         setMenuItems(jMenuItem5, jMenu1, "Exit", e -> {
             String p = "Do you want to exit the program";
             int c = JOptionPane.showConfirmDialog(null, p, "Information", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
-
             if (c == JOptionPane.OK_OPTION) {
-                System.exit(1);
-                //TODO:zmienić i zrobić tu resigne i zamknięcie okna  nie przez system.exit
+                if(manager.playerColor == PlayerColor.BLACK)
+                    new ThreadForJOptionPane("Black", window);
+                else
+                    new ThreadForJOptionPane("White", window);
             }
         });
 
@@ -545,22 +543,16 @@ class GameWindow extends JFrame {
     }
 
     void changeAgreeState(boolean b) {
-        buttonAgree.setEnabled(b);
+        if(gameStopped) {
+            buttonAgree.setEnabled(b);
+        }
     }
 
     void changePhase(boolean toChoosing) {
-        if(toChoosing) {
-            gameStopped = true;
-            jTabbedPane1.setEnabledAt(1, true);
-            jTabbedPane1.setSelectedIndex(1);
-            buttonPass.setEnabled(false);
-        }
-        else {
-            gameStopped = false;
-            jTabbedPane1.setEnabledAt(1, false);
-            jTabbedPane1.setSelectedIndex(0);
-            buttonPass.setEnabled(true);
-        }
+        System.out.println(manager.playerColor + ": " + toChoosing);
+        gameStopped = toChoosing;
+        buttonSend.setEnabled(toChoosing);
+        buttonResume.setEnabled(toChoosing);
     }
 
     private void setPanelBorder(JPanel panel, String panelName) {
@@ -596,7 +588,7 @@ class GameWindow extends JFrame {
         item.addActionListener(listener);
     }
 
-    private void reloadInfo() {
+    private void reloadInfo()  {
         try {
             if (manager.getBoard().getCurrentPlayer() == PlayerColor.BLACK)
                 jLabel16.setText("BLACK");
