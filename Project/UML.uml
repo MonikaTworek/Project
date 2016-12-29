@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement />
+  <nodes>
+    <node x="117.03283309178639" y="1038.5729449671153">GameWindowTest</node>
+    <node x="500.1174163168076" y="780.0295584976959">OpenSocketSession</node>
+    <node x="417.8752186493675" y="25.25596350629945">GamePhase</node>
+    <node x="842.1174163168075" y="0.0">Direction</node>
+    <node x="211.81038996204543" y="240.5464891986477">Stone</node>
+    <node x="250.49394957055853" y="838.361948991223">GameWindow</node>
+    <node x="318.188874308439" y="420.0052637701874">Client</node>
+    <node x="271.38088499025326" y="0.0">GameTest</node>
+    <node x="166.90438789017458" y="654.1630266790801">Log</node>
+    <node x="680.1174163168075" y="0.0">StartingWindow</node>
+    <node x="0.0" y="802.6666321057144">ThreadForJOptionPane</node>
+    <node x="318.1888743084389" y="205.200957532503">Game</node>
+    <node x="184.7519596249777" y="368.61416004932784">PlayerColor</node>
+    <node x="380.92382632959465" y="312.60311065134516">ClientManager</node>
+    <node x="312.4560301700174" y="1086.8590781127714">Main</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="GameWindow" target="ThreadForJOptionPane">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Client" target="PlayerColor">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="GameWindow" target="OpenSocketSession">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="GameWindow" target="Log">
+      <point x="5.838930374115986" y="0.0" />
+      <point x="5.838930374115989" y="0.0" />
+    </edge>
+    <edge source="OpenSocketSession" target="Client">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Game" target="GamePhase">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Game" target="Stone">
+      <point x="1.4129247018596196" y="4.272428324369514" />
+      <point x="1.4129247018596232" y="4.272428324369514" />
+    </edge>
+    <edge source="Client" target="ClientManager">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="GameTest" target="Game">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="GameWindowTest" target="GameWindow">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="GameWindow" target="Client">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Main" target="GameWindow">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Stone" target="PlayerColor">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Game" target="PlayerColor">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="ClientManager" target="Game">
+      <point x="6.412243705596566" y="0.0" />
+      <point x="6.41224370559657" y="0.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.8" x="325.375" y="763.125" />
+  <SelectedNodes>
+    <node>Direction</node>
+  </SelectedNodes>
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
