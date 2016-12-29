@@ -9,7 +9,6 @@ import java.util.StringTokenizer;
 
 
 //TODO częściej repaint (szczególnie dla klasy czekającej na ruch)
-//TODO co jak brak możliwych ruchów dla gracza - auto-pass ??
 class Client extends ClientManager {
     public boolean yesYouCan=false;
     private int port;
@@ -95,7 +94,6 @@ class Client extends ClientManager {
                 //clicked pass
                 if (x == 100) {
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
-                    //TODO: sprawdzanie co wysłano
                     System.out.println("dostałem pas");
                     out_txt.println(coord);
                     if (y == 2) {

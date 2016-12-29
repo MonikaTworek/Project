@@ -35,7 +35,6 @@ public class ClientAgent {
     public void disconnect() {
 //        try {
         //TODO:wywołanie funkcji rezygnuj
-        //TODO:przerzucić na serwer
         System.exit(1);
 //        } catch (IOException e) {
 //            System.err.println("Error while disconnecting client. " + e);
