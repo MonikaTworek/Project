@@ -38,9 +38,9 @@ class ClientManager {
             double w = boardGraphic.getWhiteScore();
 
             if (b > w)
-                new ThreadForJOptionPane("Black");
+                new ThreadForJOptionPane("Black", gameWindow.window);
             else
-                new ThreadForJOptionPane("White");
+                new ThreadForJOptionPane("White", gameWindow.window);
         }
         else {
             gameWindow.jPanel2.lastX = y*25 + 20;

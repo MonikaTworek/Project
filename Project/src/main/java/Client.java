@@ -8,7 +8,6 @@ import java.util.Random;
 import java.util.StringTokenizer;
 
 
-//TODO częściej repaint (szczególnie dla klasy czekającej na ruch)
 class Client extends ClientManager {
     public boolean yesYouCan=false;
     private int port;
@@ -87,7 +86,6 @@ class Client extends ClientManager {
     public void move(int x, int y) throws Exception {
         System.out.println("Bot entered start");
         currentColor = boardGraphic.getCurrentPlayer();
-//        if (currentColor == playerColor) {
             if (boardGraphic != null) {
                 String coord = x + "-" + y;
                 System.out.println(coord);
@@ -130,10 +128,6 @@ class Client extends ClientManager {
             }
             boardGraphic.changeTurn();
             new BotWaitMove();
-//        }
-    }
-    public void yesYou(){
-        yesYouCan=true;
     }
 
     private class BotWaitMove extends Thread {
@@ -171,7 +165,7 @@ class Client extends ClientManager {
                     int x = Integer.parseInt(t.nextToken());
                     int y = Integer.parseInt(t.nextToken());
                     System.out.println("[Bot] " + playerColor + ": " + x + ", " + y);
-                    if(yesYouCan){
+                    if(yesYouCan){//kiedy nie może postawić kamień
                         move(100,1);
                         yesYouCan=false;
                         return;
@@ -280,9 +274,9 @@ class Client extends ClientManager {
         //clicked RESIGN
         if(x == 50 && y == 50) {
             if(playerColor == PlayerColor.BLACK)
-                new ThreadForJOptionPane("White");
+                new ThreadForJOptionPane("White", gameWindow.window);
             else
-                new ThreadForJOptionPane("Black");
+                new ThreadForJOptionPane("Black", gameWindow.window);
 //             System.exit(0);
         }
         if (currentColor == playerColor) {
