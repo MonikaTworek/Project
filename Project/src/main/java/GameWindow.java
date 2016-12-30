@@ -11,6 +11,8 @@ import java.awt.geom.*;
 import java.io.*;
 import javax.imageio.*;
 
+//TODO przetestowac frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING)) do zamykania okna
+
 //TODO window może być singletonem!
 //TODO automatyczne przełączanie pomiędzy zakładkami podczas przejścia z fazy głównej do wybierania i odwrotnie
 //TODO okno(gra) jako obiekt posiadający stany (wzorzec). Send i inne przyciski powodują przejścia pomiędzy stanami
@@ -100,11 +102,10 @@ class GameWindow extends JFrame {
                                     if (manager == null)
                                         return;
 
-                                    //TODO pomyśleć nad tym, bo nie za ładne
                                     if (manager instanceof Client) {
                                         if (gameStopped) {
                                             if (manager.getBoard().getBoard()[line][column] != null && manager.playerColor == manager.getBoard().getCurrentPlayer()) {
-                                                window.changeAgreeState(false);
+//                                                window.changeAgreeState(false);
                                                 manager.getBoard().deadStones[line][column] = !manager.getBoard().deadStones[line][column];
                                                 manager.start(line+200, column+200);
                                             }
@@ -481,7 +482,6 @@ class GameWindow extends JFrame {
             }
         });
 
-//        jTabbedPane1.setEnabledAt(1, false);
         buttonAgree.setEnabled(false);
         buttonSend.setEnabled(false);
         buttonResume.setEnabled(false);
@@ -553,6 +553,8 @@ class GameWindow extends JFrame {
         gameStopped = toChoosing;
         buttonSend.setEnabled(toChoosing);
         buttonResume.setEnabled(toChoosing);
+        buttonAgree.setEnabled(toChoosing);
+        buttonPass.setEnabled(!toChoosing);
     }
 
     private void setPanelBorder(JPanel panel, String panelName) {

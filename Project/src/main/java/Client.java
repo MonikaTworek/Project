@@ -8,8 +8,10 @@ import java.util.Random;
 import java.util.StringTokenizer;
 
 
+//TODO częściej repaint (szczególnie dla klasy czekającej na ruch)
+//TODO co jak brak możliwych ruchów dla gracza - auto-pass ??
 class Client extends ClientManager {
-    public boolean yesYouCan=false;
+    public boolean yesYouCan = false;
     private int port;
     PlayerColor currentColor;
     PlayerColor playerColor;
@@ -21,13 +23,13 @@ class Client extends ClientManager {
      * Tworzenie obiektu klienta
      *
      * @param _ip_server adres IP przeciwnika
-     * @param _port port przeciwnika
+     * @param _port      port przeciwnika
      */
     Client(String _ip_server, int _port, boolean firstPlayer, GameWindow gameWindow) throws IOException {
         super(gameWindow);
         port = _port;
 
-        if(firstPlayer) {
+        if (firstPlayer) {
             playerColor = PlayerColor.BLACK;
             System.out.print("[GAME] ClientManager started \n");
             System.out.println("Black player: " + _port);
@@ -36,7 +38,7 @@ class Client extends ClientManager {
             wait.start();
         }
 
-        if(!firstPlayer) {
+        if (!firstPlayer) {
             System.out.print("Client two go to game \n");
             socketName = _ip_server;
             playerColor = PlayerColor.WHITE;
@@ -61,10 +63,10 @@ class Client extends ClientManager {
 
     Client(int port, int dim, GameWindow gameWindow) {
         super(gameWindow);
-        this.port=port;
-        socketName="localhost";
-        this.dim=dim;
-        playerColor=PlayerColor.WHITE;
+        this.port = port;
+        socketName = "localhost";
+        this.dim = dim;
+        playerColor = PlayerColor.WHITE;
         System.out.print("Bot enteres the game \n");
         try {
             socket = new Socket(socketName, port);
@@ -79,6 +81,7 @@ class Client extends ClientManager {
 
     /**
      * wykonuje ruchy dla bota
+     *
      * @param x
      * @param y
      * @throws Exception
@@ -86,48 +89,51 @@ class Client extends ClientManager {
     public void move(int x, int y) throws Exception {
         System.out.println("Bot entered start");
         currentColor = boardGraphic.getCurrentPlayer();
-            if (boardGraphic != null) {
-                String coord = x + "-" + y;
-                System.out.println(coord);
-                //clicked pass
-                if (x == 100) {
-                    PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
-                    System.out.println("dostałem pas");
-                    out_txt.println(coord);
-                    if (y == 2) {
-                        gameWindow.gameStopped = true;
-                        gameWindow.window.changePhase(true);
-                    }
-                    boardGraphic.skipMove();
-                    new BotWaitMove();
-                    return;
-                }
-                //clicked AGREE
-                else if (x == 30) {
-                    PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
-                    out_txt.println(coord);
-                    boardGraphic.updateDeadStoneDecision(-1);
-                    boardGraphic.changeTurn();
-                    if (y == 2) {
-                        gameWindow.gameStopped = false;
-                        boardGraphic.endGame();
-                    }
-                    new BotWaitMove();
-                    return;
+        System.out.println("current color: " + currentColor);
+        gameWindow.window.changeAgreeState(true);
+        System.out.println("Joł");
+        if (boardGraphic != null) {
+            String coord = x + "-" + y;
 
+            //clicked pass
+            if (x == 100) {
+                PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
+                System.out.println("dostałem pas");
+                out_txt.println(coord);
+                if (y == 2) {
+                    gameWindow.gameStopped = true;
+                    gameWindow.window.changePhase(true);
                 }
-                //clicked normal move
-                Stone p = boardGraphic.updateBoard(currentColor, x, y);
-                if (p != null) {
-                    PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
-                    out_txt.println(coord);
-                }
-
-            } else {
-                move(100,1);
+                boardGraphic.skipMove();
+                new BotWaitMove();
+                return;
             }
-            boardGraphic.changeTurn();
-            new BotWaitMove();
+            //clicked AGREE
+            else if (x == 30) {
+                PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
+                out_txt.println(coord);
+                boardGraphic.updateDeadStoneDecision(-1);
+                boardGraphic.changeTurn();
+                if (y == 2) {
+                    gameWindow.gameStopped = false;
+                    boardGraphic.endGame();
+                }
+                new BotWaitMove();
+                return;
+
+            }
+            //clicked normal move
+            Stone p = boardGraphic.updateBoard(currentColor, x, y);
+            if (p != null) {
+                PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
+                out_txt.println(coord);
+            }
+
+        } else {
+            move(100, 1);
+        }
+        boardGraphic.changeTurn();
+        new BotWaitMove();
     }
 
     private class BotWaitMove extends Thread {
@@ -154,7 +160,9 @@ class Client extends ClientManager {
             try {
                 System.out.println("[Bot] I'm waiting here...");
                 do {
-                    if(yesYouCan){break;}
+                    if (yesYouCan) {
+                        break;
+                    }
                     currentColor = boardGraphic.getCurrentPlayer();
                 } while (currentColor == playerColor);
                 System.out.println("[Bot] Oh look! Its my turn now!");
@@ -165,26 +173,24 @@ class Client extends ClientManager {
                     int x = Integer.parseInt(t.nextToken());
                     int y = Integer.parseInt(t.nextToken());
                     System.out.println("[Bot] " + playerColor + ": " + x + ", " + y);
-                    if(yesYouCan){//kiedy nie może postawić kamień
-                        move(100,1);
-                        yesYouCan=false;
+                    if (yesYouCan) {//kiedy nie może położyć kamienia pasuje
+                        move(100, 1);
+                        yesYouCan = false;
                         return;
                     }
                     if (boardGraphic != null) {
                         //received Pass ==> PASS
                         if (x == 100) {
-                            if(y==1) {
+                            if (y == 1) {
                                 System.out.println("BOT: I've got: Received first pass");
                                 move(100, 2);
                                 boardGraphic.skipMove();
-                                return;
                             }
                             if (y == 2) {
                                 System.out.println("Received second pass");
-                                move(20,20);
+                                move(20, 20);
                                 gameWindow.gameStopped = true;
                                 gameWindow.window.changePhase(true);
-                                return;
                             }
                         }
                         //received to delete
@@ -196,7 +202,7 @@ class Client extends ClientManager {
 
                         //received SEND ==> agree
                         else if (x == 20 && y == 20) {
-                            move(20,20);
+                            move(20, 20);
                             boardGraphic.updateDeadStoneDecision(1);
                             gameWindow.gameStopped = true;
                             boardGraphic.changeTurn();
@@ -205,25 +211,25 @@ class Client extends ClientManager {
                         //received AGREE ==> AGREE
                         else if (x == 30) {
                             if (y == 2) {
-                                move(30,2);
+                                move(30, 2);
                                 gameWindow.gameStopped = false;
                                 boardGraphic.endGame();
                             }
-                            move(30,1);
+                            move(30, 1);
                             boardGraphic.updateDeadStoneDecision(-1);
                             boardGraphic.changeTurn();
                             return;
                         }
                         //received Resume ==> do nothing, just play
                         else if (x == 40 && y == 40) {
-                            x=generator.nextInt(dim);
-                            y=generator.nextInt(dim);
-                            System.out.print(x+ " + "+y);
-                            boolean check =boardGraphic.positionIsFree(x,y);
-                            if (!check){
-                                move(100,1);
+                            x = generator.nextInt(dim);
+                            y = generator.nextInt(dim);
+                            System.out.print(x + " + " + y);
+                            boolean check = boardGraphic.positionIsFree(x, y);
+                            if (!check) {
+                                move(100, 1);
                             }
-                            move(x,y);
+                            move(x, y);
                             gameWindow.window.changePhase(false);
                             boardGraphic.returnToMainPhase();
                             boardGraphic.changeTurn();
@@ -236,15 +242,15 @@ class Client extends ClientManager {
                         }
 
 
-                        x=generator.nextInt(dim);
-                        y=generator.nextInt(dim);
+                        x = generator.nextInt(dim);
+                        y = generator.nextInt(dim);
                         System.out.println("[Bot] i'll move to: " + x + " : " + y);
-                        boolean check =boardGraphic.positionIsFree(x,y);
-                        if (!check){
+                        boolean check = boardGraphic.positionIsFree(x, y);
+                        if (!check) {
                             System.out.println("CHECK");
-                            move(100,1);
+                            move(100, 1);
                         }
-                        move(x,y);
+                        move(x, y);
 
                         gameWindow.window.changePhase(false);
                         boardGraphic.returnToMainPhase();
@@ -269,25 +275,25 @@ class Client extends ClientManager {
     public void start(int x, int y) throws Exception {
         System.out.println(playerColor + " entered start");
         currentColor = boardGraphic.getCurrentPlayer();
-        gameWindow.window.changeAgreeState(true);
+        if (gameWindow.gameStopped)
+            gameWindow.window.changeAgreeState(true);
         String coord = x + "-" + y;
         //clicked RESIGN
-        if(x == 50 && y == 50) {
-            if(playerColor == PlayerColor.BLACK)
+        if (x == 50 && y == 50) {
+            if (playerColor == PlayerColor.BLACK)
                 new ThreadForJOptionPane("White", gameWindow.window);
             else
                 new ThreadForJOptionPane("Black", gameWindow.window);
-//             System.exit(0);
         }
         if (currentColor == playerColor) {
             if (boardGraphic != null) {
                 System.out.println(playerColor + ": " + coord);
                 //clicked pass
-                if(x == 100) {
+                if (x == 100) {
                     gameWindow.logArea.sendLogText(currentColor + ": Passed\n");
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                     out_txt.println(coord);
-                    if(y == 2) {
+                    if (y == 2) {
                         gameWindow.logArea.sendLogText(currentColor + ": Entered dead stones pointing\n");
                         gameWindow.window.changePhase(true);
                     }
@@ -298,7 +304,7 @@ class Client extends ClientManager {
                 }
 
                 //clicked to delete
-                else if(x >= 200 && y >= 200) {
+                else if (x >= 200 && y >= 200) {
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                     out_txt.println(coord);
                     gameWindow.window.changeAgreeState(false);
@@ -321,7 +327,7 @@ class Client extends ClientManager {
                     out_txt.println(coord);
                     boardGraphic.updateDeadStoneDecision(-1);
                     boardGraphic.changeTurn();
-                    if(y == 2) {
+                    if (y == 2) {
                         gameWindow.logArea.sendLogText(currentColor + ": Game over\n");
                         gameWindow.gameStopped = false;
                         boardGraphic.endGame();
@@ -332,7 +338,7 @@ class Client extends ClientManager {
 
                 }
                 //clicked RESUME
-                else if(x == 40 && y == 40) {
+                else if (x == 40 && y == 40) {
                     gameWindow.logArea.sendLogText(currentColor + ": Resuming the game\n");
                     PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                     out_txt.println(coord);
@@ -350,13 +356,11 @@ class Client extends ClientManager {
                     out_txt.println(coord);
                     gameWindow.logArea.sendLogText(currentColor + ": Placed the stone at " + x + ", " + y + "\n");
                     paintLastMove(x, y);
-                }
-                else {
+                } else {
                     gameWindow.logArea.sendLogText(currentColor + ": Wrong place for stone\n");
                     return;
                 }
-            }
-            else
+            } else
                 socket = null;
             new WaitMove();
         }
@@ -369,7 +373,9 @@ class Client extends ClientManager {
         /**
          * Buduje obiekt i uruchamia wątek
          */
-        WaitMove() {start();}
+        WaitMove() {
+            start();
+        }
 
         /**
          * Wątek czeka na ruch
@@ -377,7 +383,7 @@ class Client extends ClientManager {
         public void run() {
             try {
                 currentColor = boardGraphic.getCurrentPlayer();
-                if(playerColor != currentColor) {
+                if (playerColor != currentColor) {
                     BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     String tmp = in.readLine();
                     StringTokenizer t = new StringTokenizer(tmp, "-");
@@ -388,7 +394,7 @@ class Client extends ClientManager {
                     if (boardGraphic != null) {
                         //received Pass
                         if (x == 100) {
-                            if(y == 1) {
+                            if (y == 1) {
                                 System.out.println("Received first pass");
                             }
                             if (y == 2) {
@@ -398,7 +404,6 @@ class Client extends ClientManager {
                             gameWindow.logArea.sendLogText(currentColor + ": Passed\n");
                             boardGraphic.skipMove();
                             paintLastMove(x, y);
-                            gameWindow.window.repaint();
                             return;
                         }
                         //received to delete
@@ -420,7 +425,7 @@ class Client extends ClientManager {
                         //received AGREE
                         else if (x == 30) {
                             gameWindow.logArea.sendLogText(currentColor + ": Agreed with dead stones\n");
-                            if(y == 2) {
+                            if (y == 2) {
                                 gameWindow.logArea.sendLogText(currentColor + ": Game over\n");
                                 gameWindow.gameStopped = false;
                                 boardGraphic.endGame();
@@ -432,7 +437,7 @@ class Client extends ClientManager {
                             return;
                         }
                         //received Resume
-                        else if(x == 40 && y == 40) {
+                        else if (x == 40 && y == 40) {
                             gameWindow.logArea.sendLogText(currentColor + ": Resuming the game\n");
                             gameWindow.window.changePhase(false);
                             boardGraphic.returnToMainPhase();
@@ -467,8 +472,8 @@ class Client extends ClientManager {
                 String a = "The game is began. Black starts";
                 String b = "Game started";
                 JOptionPane.showMessageDialog(null, a, b, JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ignored) {
             }
-            catch (Exception ignored) {}
         }
     }
 }
