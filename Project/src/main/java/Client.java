@@ -89,9 +89,7 @@ class Client extends ClientManager {
     public void move(int x, int y) throws Exception {
         System.out.println("Bot entered start");
         currentColor = boardGraphic.getCurrentPlayer();
-        System.out.println("current color: " + currentColor);
         gameWindow.window.changeAgreeState(true);
-        System.out.println("Joł");
         if (boardGraphic != null) {
             String coord = x + "-" + y;
 
@@ -101,6 +99,7 @@ class Client extends ClientManager {
                 System.out.println("dostałem pas");
                 out_txt.println(coord);
                 if (y == 2) {
+                    System.out.println("a nawet dwa");
                     gameWindow.gameStopped = true;
                     gameWindow.window.changePhase(true);
                 }
@@ -128,6 +127,7 @@ class Client extends ClientManager {
                 PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                 out_txt.println(coord);
             }
+            else{move(100,1);}
 
         } else {
             move(100, 1);
@@ -160,9 +160,7 @@ class Client extends ClientManager {
             try {
                 System.out.println("[Bot] I'm waiting here...");
                 do {
-                    if (yesYouCan) {
-                        break;
-                    }
+                    if (yesYouCan) {break;}
                     currentColor = boardGraphic.getCurrentPlayer();
                 } while (currentColor == playerColor);
                 System.out.println("[Bot] Oh look! Its my turn now!");
@@ -245,16 +243,13 @@ class Client extends ClientManager {
                         x = generator.nextInt(dim);
                         y = generator.nextInt(dim);
                         System.out.println("[Bot] i'll move to: " + x + " : " + y);
-                        boolean check = boardGraphic.positionIsFree(x, y);
-                        if (!check) {
-                            System.out.println("CHECK");
-                            move(100, 1);
-                        }
                         move(x, y);
+                        System.out.println("teraz gra: " + currentColor);
 
                         gameWindow.window.changePhase(false);
                         boardGraphic.returnToMainPhase();
                         boardGraphic.changeTurn();
+                        System.out.println("teraz gra: " + currentColor);
                     } else
                         socket = null;
                 }
