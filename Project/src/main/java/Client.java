@@ -78,6 +78,7 @@ class Client extends ClientManager {
         }
         gameWindow.logArea.sendLogText(playerColor + ": Entered the game\n");
     }
+    boolean jol;
 
     /**
      * wykonuje ruchy dla bota
@@ -87,7 +88,8 @@ class Client extends ClientManager {
      * @throws Exception
      */
     public void move(int x, int y) throws Exception {
-        System.out.println("Bot entered start");
+        jol=false;
+        System.out.println("[mov]Bot entered start");
         currentColor = boardGraphic.getCurrentPlayer();
         gameWindow.window.changeAgreeState(true);
         if (boardGraphic != null) {
@@ -109,6 +111,8 @@ class Client extends ClientManager {
             }
             //clicked AGREE
             else if (x == 30) {
+                System.out.println("[move]Ciekawe na co się zgadzam");
+                jol=true;
                 PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                 out_txt.println(coord);
                 boardGraphic.updateDeadStoneDecision(-1);
@@ -121,13 +125,18 @@ class Client extends ClientManager {
                 return;
 
             }
+            if(x==20 && y == 20){
+                System.out.println("[move] Nie wiem co robię");
+            }
+            //TODO: po pierwsze flaga, by nie pasował, kieddy nie daje kamienia bo martwe
+            //TODO: sprawdzic, czy 30,1, to agree
             //clicked normal move
             Stone p = boardGraphic.updateBoard(currentColor, x, y);
             if (p != null) {
                 PrintWriter out_txt = new PrintWriter(socket.getOutputStream(), true);
                 out_txt.println(coord);
             }
-            else{move(100,1);}
+            else if(!jol){move(100,1);}
 
         } else {
             move(100, 1);
@@ -190,17 +199,21 @@ class Client extends ClientManager {
                                 gameWindow.gameStopped = true;
                                 gameWindow.window.changePhase(true);
                             }
+                            return;
                         }
                         //received to delete
                         else if (x >= 200 && y >= 200) {
+                            System.out.println("wszedłem w dedy");
                             boardGraphic.addToDeadStones(x - 200, y - 200);
-                            new WaitMove();
+                            new BotWaitMove();
                             return;
                         }
 
                         //received SEND ==> agree
                         else if (x == 20 && y == 20) {
-                            move(20, 20);
+                            System.out.println("CZy wchodzi w akcpetację deadów");
+                            move(30,1);
+//                            move(20, 20);
                             boardGraphic.updateDeadStoneDecision(1);
                             gameWindow.gameStopped = true;
                             boardGraphic.changeTurn();

@@ -84,7 +84,7 @@ public class Server extends Thread{
                     gbot = new GameWindow(clientAgents.get(i).getDim());
                     gbot.manager = new Client(null, SocketNumber - i -1, true, gbot);
                     gbotbot = new GameWindow(clientAgents.get(i).getDim());
-                    gbotbot.setVisible(false);
+                    gbotbot.setVisible(true);
                     gbotbot.manager = new Client( SocketNumber - i - 1, clientAgents.get(i).getDim(), gbotbot);
                     clientAgents.get(i).setHasPartner(true);
                     continue;
